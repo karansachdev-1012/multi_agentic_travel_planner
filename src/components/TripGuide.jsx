@@ -90,7 +90,7 @@ export function TripGuide({data,form,onReset,verification,verifying}){
               style={{border:0}}
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
-              src={`https://www.google.com/maps/embed/v1/directions?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&origin=${encodeURIComponent(data.origin||"")}&destination=${encodeURIComponent((data.routeDestinations||data.allDestinations||[]).slice(-1)[0]||"")}&waypoints=${(data.routeDestinations||data.allDestinations||[]).slice(0,-1).map(d=>encodeURIComponent(d)).join("|")}&mode=flying`}
+              src={`https://www.google.com/maps/embed/v1/directions?key=${import.meta.env.VITE_GOOGLE_MAPS_KEY||""}&origin=${encodeURIComponent(data.origin||"")}&destination=${encodeURIComponent((data.routeDestinations||data.allDestinations||[]).slice(-1)[0]||"")}&waypoints=${(data.routeDestinations||data.allDestinations||[]).slice(0,-1).map(d=>encodeURIComponent(d)).join("|")}&mode=flying`}
             />
           </div>
           <div className={s.mapBtns}>
