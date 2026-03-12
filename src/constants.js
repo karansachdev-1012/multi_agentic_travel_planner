@@ -65,8 +65,8 @@ export const imgUrl = (kw,w=800,h=500)=>{
   const seed = Math.abs([...kw].reduce((a,c)=>((a<<5)-a)+c.charCodeAt(0),0));
   return `https://picsum.photos/seed/${encodeURIComponent(kw.replace(/\s+/g,"-"))}-${seed % 1000}/${w}/${h}`;
 };
-export const airbnbUrl=(city,ci,co,adults,children,maxB)=>{const p=new URLSearchParams({adults,children:children||0,checkin:ci||"",checkout:co||"",room_type:"entire_home",min_bedrooms:adults>3?2:1,...(maxB?{price_max:maxB}:{})});return`https://www.airbnb.com/s/${encodeURIComponent(city)}/homes?${p}`;};
-export const bookingUrl=(city,ci,co,adults)=>`https://www.booking.com/searchresults.html?ss=${encodeURIComponent(city)}&checkin=${ci||""}&checkout=${co||""}&group_adults=${adults}&no_rooms=1`;
+export const airbnbUrl=(city,ci,co,adults,children,maxB,name)=>{const q=name?`${name}, ${city}`:city;const p=new URLSearchParams({adults,children:children||0,checkin:ci||"",checkout:co||"",room_type:"entire_home",min_bedrooms:adults>3?2:1,...(maxB?{price_max:maxB}:{})});return`https://www.airbnb.com/s/${encodeURIComponent(q)}/homes?${p}`;};
+export const bookingUrl=(city,ci,co,adults,name)=>{const q=name?`${name}, ${city}`:city;return`https://www.booking.com/searchresults.html?ss=${encodeURIComponent(q)}&checkin=${ci||""}&checkout=${co||""}&group_adults=${adults}&no_rooms=1`;};
 export const mapsUrl=q=>`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`;
 export const gygUrl=(act,city)=>`https://www.getyourguide.com/s/?q=${encodeURIComponent(act+" "+city)}`;
 export const taUrl=q=>`https://www.tripadvisor.com/Search?q=${encodeURIComponent(q)}`;

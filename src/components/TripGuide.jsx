@@ -7,6 +7,9 @@ import { SafetyBadge } from "./SafetyBadge.jsx";
 import { SeasonalPanel } from "./SeasonalPanel.jsx";
 import { RatingBadge } from "./RatingBadge.jsx";
 import { PdfExportButton } from "./PdfExport.jsx";
+import PriceTrends from "./PriceTrends.jsx";
+import SwapModal from "./SwapModal.jsx";
+import { useTrip } from "../context/TripContext.jsx";
 import s from "../styles/TripGuide.module.css";
 
 // Color helpers for activity tags (dynamic per-tag)
@@ -25,6 +28,7 @@ export function TripGuide({data,form,onReset,verification,verifying}){
   const maxN=Math.round(Number(form.budget||2000)*(form.adults||2)*0.35/(data.totalNights||7));
   const currencyRates=verification?.currency?.rates||{};
   const activeRate=localCurrency&&currencyRates[localCurrency]?currencyRates[localCurrency].rate:null;
+  const { setSwapModal, budgetAdjustments, budgetSelections, selectHotelOption, selectFlightOption, resetBudgetSelections } = useTrip();
 
   return(
     <div className={s.page}>
@@ -133,7 +137,17 @@ export function TripGuide({data,form,onReset,verification,verifying}){
                     </div>
                   </div>
                   <div className={s.activities}>
-                    {(d.activities||[]).map((a,i)=>(
+                    {(d.activities||[]).map((a,i)=>{
+                      const kw=(a.bookingKeyword||"").toLowerCase();
+                      const nm=(a.name||"").toLowerCase();
+                      const va=verification?.activities?.find(v=>{
+                        const ma=(v.matched_activity||"").toLowerCase();
+                        if(!ma) return false;
+                        return (kw&&(ma.includes(kw.slice(0,20))||kw.includes(ma.slice(0,20))))||(nm&&(ma.includes(nm.slice(0,20))||nm.includes(ma.slice(0,20))));
+                      });
+                      const hasVerifiedPrice=va&&va.price;
+                      const hasDirectUrl=va&&va.booking_url&&va.source!=="Search Links";
+                      return(
                       <div key={i} className={i<d.activities.length-1?s.activityBorder:s.activity}>
                         <div className={s.actTime}>{a.time}</div>
                         <div className={s.actBody}>
@@ -141,20 +155,26 @@ export function TripGuide({data,form,onReset,verification,verifying}){
                             {a.name}
                             {(()=>{const rv=verification?.reviews?.find(r=>r.place_name===a.name);return rv?<RatingBadge review={rv}/>:null;})()}
                             {a.tag&&<span className={s.actTag} style={tagStyle(a.tag)}>{a.tag}</span>}
-                            {a.costPP&&a.costPP.toLowerCase()!=="free"&&<span className={s.actCost}>{activeRate?`${localCurrency} ${convertPrice(a.costPP.replace(/[^0-9.]/g,""),activeRate)}`:a.costPP}{a.costPP.includes("/pp")?"":"/pp"}</span>}
+                            {hasVerifiedPrice?<span className={s.actCost}>{activeRate?`${localCurrency} ${convertPrice(va.price,activeRate)}`:`${data.currency} ${va.price}`}/pp</span>:a.costPP&&a.costPP.toLowerCase()!=="free"&&<span className={s.actCost}>{activeRate?`${localCurrency} ${convertPrice(a.costPP.replace(/[^0-9.]/g,""),activeRate)}`:a.costPP}{a.costPP.includes("/pp")?"":"/pp"}</span>}
                             {a.costPP&&a.costPP.toLowerCase()==="free"&&<span className={s.actTag} style={tagStyle("free")}>Free</span>}
-                            {(()=>{const va=verification?.activities?.find(v=>v.matched_activity&&a.bookingKeyword&&v.matched_activity.toLowerCase().includes(a.bookingKeyword?.toLowerCase()?.slice(0,15)));return va&&va.price?<VBadge type="verified" label={`${data.currency} ${va.price} on ${va.source}`} small/>:verification&&!verifying?<VBadge type="ai" small/>:null;})()}
+                            {hasVerifiedPrice?<VBadge type="verified" label={`on ${va.source}`} small/>:verification&&!verifying?<VBadge type="ai" small/>:null}
                           </div>
                           <div className={s.actDesc}>{a.description}</div>
                           <div className={s.actLinks}>
                             {a.mapsQuery&&<a href={mapsUrl(a.mapsQuery)} target="_blank" rel="noreferrer" className={s.linkBtn} style={lBtnStyle("#1a9ebe")}>Maps</a>}
-                            {a.bookingKeyword&&<a href={gygUrl(a.bookingKeyword,d.location)} target="_blank" rel="noreferrer" className={s.linkBtn} style={lBtnStyle("#d4a843")}>GetYourGuide</a>}
-                            {a.bookingKeyword&&<a href={viatorUrl(a.bookingKeyword+" "+d.location)} target="_blank" rel="noreferrer" className={s.linkBtn} style={lBtnStyle("#2a8c4a")}>Viator</a>}
+                            {hasDirectUrl?<>
+                              <a href={va.booking_url} target="_blank" rel="noreferrer" className={s.linkBtn} style={lBtnStyle(va.source?.includes("GetYourGuide")?"#d4a843":"#2a8c4a")}>{va.source||"Book"}</a>
+                              {a.bookingKeyword&&!va.source?.includes("GetYourGuide")&&<a href={gygUrl(a.bookingKeyword,d.location)} target="_blank" rel="noreferrer" className={s.linkBtn} style={lBtnStyle("#d4a843")}>GetYourGuide</a>}
+                              {a.bookingKeyword&&!va.source?.includes("Viator")&&<a href={viatorUrl(a.bookingKeyword+" "+d.location)} target="_blank" rel="noreferrer" className={s.linkBtn} style={lBtnStyle("#2a8c4a")}>Viator</a>}
+                            </>:<>
+                              {a.bookingKeyword&&<a href={gygUrl(a.bookingKeyword,d.location)} target="_blank" rel="noreferrer" className={s.linkBtn} style={lBtnStyle("#d4a843")}>GetYourGuide</a>}
+                              {a.bookingKeyword&&<a href={viatorUrl(a.bookingKeyword+" "+d.location)} target="_blank" rel="noreferrer" className={s.linkBtn} style={lBtnStyle("#2a8c4a")}>Viator</a>}
+                            </>}
                             {a.bookingKeyword&&<a href={taUrl(a.name+" "+d.location)} target="_blank" rel="noreferrer" className={s.linkBtn} style={lBtnStyle("#555")}>Reviews</a>}
                           </div>
                         </div>
                       </div>
-                    ))}
+                      );})}
                   </div>
                 </div>
                 {d.diningTip&&<div className={s.diningTip}>
@@ -162,6 +182,7 @@ export function TripGuide({data,form,onReset,verification,verifying}){
                   <div className={s.diningContent}>
                     <div className={s.diningHeader}>
                       <span className={s.diningName}>{d.diningTip.name}</span>
+                      <button className={s.swapBtnSmall} onClick={()=>setSwapModal({type:"restaurant",location:d.location,dayIndex:day,currentName:d.diningTip.name,date:d.date})}>Change</button>
                       {(()=>{const rv=verification?.reviews?.find(r=>r.place_name===d.diningTip.name);return rv?<RatingBadge review={rv}/>:null;})()}
                       {(()=>{const pv=verification?.places?.find(p=>p.query===d.diningTip.name);return pv?<VBadge type={pv.found?"verified":"failed"} small/>:null;})()}
                     </div>
@@ -224,53 +245,66 @@ export function TripGuide({data,form,onReset,verification,verifying}){
                 <a href={`https://www.google.com/travel/hotels/${encodeURIComponent(st.location)}?q=${encodeURIComponent(st.location)}&g2lb=2502548,2503771&hl=en&gl=us&cs=1&ssta=1&ts=CAESCgoCCAMKAggDEAAaRwopEicyJTB4MTQ3NjY4ZGVmY2M0OTI5YjoxLCoyJTB4MTQ3NjY4ZGVmYWU2&checkin=${st.checkIn||data.checkIn||""}&checkout=${st.checkOut||data.checkOut||""}&ap=MAA`} target="_blank" rel="noreferrer" className={s.bigBtn} style={{background:"rgba(66,133,244,.85)"}}>Google Hotels</a>
               </div>
             </div>
-            {/* Verified Hotels */}
-            {verification?.hotels?.[st.location]?.length>0&&<div className={s.verifiedHotels}>
+            {/* Hotels — show verified (real, bookable) when available, AI fallback otherwise */}
+            {(()=>{const vh=(verification?.hotels?.[st.location]||[]).filter(h=>h.source!=="Search Links"&&h.price_per_night);const hasVerified=vh.length>0;return(<>
+            {hasVerified&&<div className={s.verifiedHotels}>
               <div className={s.verifiedHotelsHeader}>
-                <VBadge type="verified" label="Real Prices from Web"/>
-                <span className={s.verifiedHotelsCount}>{verification.hotels[st.location].length} hotels found</span>
+                <VBadge type="verified" label="Available for Your Dates"/>
+                <span className={s.verifiedHotelsCount}>{vh.length} hotels found</span>
               </div>
-              <div className={s.hotelGrid}>
-                {verification.hotels[st.location].slice(0,6).map((h,i)=>(
-                  <div key={i} className={s.hotelCard}>
-                    <div className={s.hotelName}>{h.name}</div>
-                    <div className={s.hotelPriceRow}>
-                      {h.price_per_night&&<span className={s.hotelPrice}>{activeRate?`${localCurrency} ${convertPrice(h.price_per_night,activeRate)}`:`${h.currency} ${h.price_per_night}`}<span className={s.hotelPriceUnit}>/night</span></span>}
-                      {h.rating&&<span className={s.hotelRating}>{"\u2605"} {h.rating}{h.review_count?` (${h.review_count})`:""}</span>}
+              <div className={s.optGrid}>
+                {vh.slice(0,6).map((h,i)=>(
+                  <div key={i} onMouseEnter={e=>{e.currentTarget.style.transform="translateY(-4px)";}} onMouseLeave={e=>{e.currentTarget.style.transform="translateY(0)";}} className={i===0?s.optCardPrimary:s.optCardSecondary}>
+                    <div className={s.optHero}>
+                      <img src={imgUrl(h.name||st.location+" hotel",600,260)} alt={h.name} className={s.optHeroImg} onError={e=>{e.target.src=imgUrl(st.location+" accommodation",600,260);}}/>
+                      {i===0&&<div className={s.optLabelPrimary}>Best Value</div>}
                     </div>
-                    <div className={s.hotelMeta}>
-                      <span className={s.hotelSource}>via {h.source}</span>
-                      {h.booking_url&&<a href={h.booking_url} target="_blank" rel="noreferrer" className={s.hotelBookLink}>Book</a>}
+                    <div className={s.optBody}>
+                      <div className={s.optName}>{h.name}</div>
+                      <div className={s.optType}>via {h.source}{h.rating?` \u2605 ${h.rating}`:""}{h.review_count?` (${h.review_count} reviews)`:""}</div>
+                      <div className={s.optFooter}>
+                        <div>{h.price_per_night&&<><span className={s.optPrice}>{activeRate?`${localCurrency} ${convertPrice(h.price_per_night,activeRate)}`:`${h.currency||data.currency} ${h.price_per_night}`}</span><span className={s.optPriceUnit}>/night</span></>}</div>
+                        <div className={s.optBookBtns}>
+                          {h.booking_url&&<a href={h.booking_url} target="_blank" rel="noreferrer" className={s.optBookBooking} style={{background:"rgba(76,175,142,.85)"}}>Book Now</a>}
+                          <a href={bookingUrl(st.location,st.checkIn||data.checkIn,st.checkOut||data.checkOut,data.adults,h.name)} target="_blank" rel="noreferrer" className={s.optBookBooking}>Booking</a>
+                          <a href={mapsUrl(h.name+" "+st.location)} target="_blank" rel="noreferrer" className={s.linkBtn} style={lBtnStyle("#4285F4")}>Google</a>
+                          <button className={s.swapBtn} onClick={()=>setSwapModal({type:"hotel",location:st.location,itemIndex:i,currentPrice:h.price_per_night||0})}>Swap</button>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 ))}
               </div>
             </div>}
-
-            <div className={s.aiLabel}>AI Recommended Options</div>
-            <div className={s.optGrid}>
-              {(st.options||[]).map((opt,i)=>(
-                <div key={i} onMouseEnter={e=>{e.currentTarget.style.transform="translateY(-4px)";}} onMouseLeave={e=>{e.currentTarget.style.transform="translateY(0)";}} className={i===0?s.optCardPrimary:s.optCardSecondary}>
-                  <div className={s.optHero}>
-                    <img src={imgUrl(opt.imageKeyword||st.location+" hotel",600,260)} alt={opt.name} className={s.optHeroImg} onError={e=>{e.target.src=imgUrl(st.location+" accommodation",600,260);}}/>
-                    <div className={i===0?s.optLabelPrimary:s.optLabelSecondary}>{opt.label}</div>
-                  </div>
-                  <div className={s.optBody}>
-                    <div className={s.optName}>{opt.name}</div>
-                    <div className={s.optType}>{opt.type} - {opt.neighborhood}</div>
-                    <div className={s.optDesc}>{opt.description}</div>
-                    {opt.amenities?.length>0&&<div className={s.optAmenities}>{opt.amenities.map(a=><span key={a} className={s.optAmenity}>{a}</span>)}</div>}
-                    <div className={s.optFooter}>
-                      <div><span className={s.optPrice}>{opt.pricePerNight}</span><span className={s.optPriceUnit}>/night</span></div>
-                      <div className={s.optBookBtns}>
-                        <a href={airbnbUrl(st.location,st.checkIn||data.checkIn,st.checkOut||data.checkOut,data.adults,data.children,maxN)} target="_blank" rel="noreferrer" className={s.optBookAirbnb}>Airbnb</a>
-                        <a href={bookingUrl(st.location,st.checkIn||data.checkIn,st.checkOut||data.checkOut,data.adults)} target="_blank" rel="noreferrer" className={s.optBookBooking}>Booking</a>
+            {!hasVerified&&<>
+              <div className={s.aiLabel}>AI Suggested Options <span style={{fontSize:".7rem",opacity:.5,marginLeft:8}}>Verify availability on booking sites</span></div>
+              <div className={s.optGrid}>
+                {(st.options||[]).map((opt,i)=>(
+                  <div key={i} onMouseEnter={e=>{e.currentTarget.style.transform="translateY(-4px)";}} onMouseLeave={e=>{e.currentTarget.style.transform="translateY(0)";}} className={i===0?s.optCardPrimary:s.optCardSecondary}>
+                    <div className={s.optHero}>
+                      <img src={imgUrl(opt.imageKeyword||st.location+" hotel",600,260)} alt={opt.name} className={s.optHeroImg} onError={e=>{e.target.src=imgUrl(st.location+" accommodation",600,260);}}/>
+                      <div className={i===0?s.optLabelPrimary:s.optLabelSecondary}>{opt.label}</div>
+                    </div>
+                    <div className={s.optBody}>
+                      <div className={s.optName}>{opt.name}</div>
+                      <div className={s.optType}>{opt.type} - {opt.neighborhood}</div>
+                      <div className={s.optDesc}>{opt.description}</div>
+                      {opt.amenities?.length>0&&<div className={s.optAmenities}>{opt.amenities.map(a=><span key={a} className={s.optAmenity}>{a}</span>)}</div>}
+                      <div className={s.optFooter}>
+                        <div><span className={s.optPrice}>{opt.pricePerNight}</span><span className={s.optPriceUnit}>/night est.</span></div>
+                        <div className={s.optBookBtns}>
+                          <a href={airbnbUrl(st.location,st.checkIn||data.checkIn,st.checkOut||data.checkOut,data.adults,data.children,maxN,opt.name)} target="_blank" rel="noreferrer" className={s.optBookAirbnb}>Airbnb</a>
+                          <a href={bookingUrl(st.location,st.checkIn||data.checkIn,st.checkOut||data.checkOut,data.adults,opt.name)} target="_blank" rel="noreferrer" className={s.optBookBooking}>Booking</a>
+                          <a href={mapsUrl(opt.name+" "+st.location)} target="_blank" rel="noreferrer" className={s.linkBtn} style={lBtnStyle("#4285F4")}>Google</a>
+                          <button className={s.swapBtn} onClick={()=>setSwapModal({type:"hotel",location:st.location,itemIndex:i,currentPrice:parseFloat(String(opt.pricePerNight).replace(/[^0-9.]/g,""))||0})}>Swap</button>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            </>}
+            </>);})()}
           </div>);})()}
         </div>}
 
@@ -331,7 +365,10 @@ export function TripGuide({data,form,onReset,verification,verifying}){
         {tab==="budget"&&data.budget&&<div>
           <div className={s.budgetHeader}>
             <div className={s.sectionTitle}>Budget Breakdown</div>
-            <CurrencyToggle rates={currencyRates} baseCurrency={data.currency} showLocal={localCurrency} onToggle={setLocalCurrency}/>
+            <div style={{display:"flex",gap:8,alignItems:"center"}}>
+              {(budgetAdjustments.accommodation!==0||budgetAdjustments.food!==0)&&<button onClick={resetBudgetSelections} className={s.resetBtn}>Reset to Defaults</button>}
+              <CurrencyToggle rates={currencyRates} baseCurrency={data.currency} showLocal={localCurrency} onToggle={setLocalCurrency}/>
+            </div>
           </div>
           {verification?.currency&&!verification.currency.error&&<div className={s.liveRates}>
             <VBadge type="verified" label="Live Exchange Rates"/>
@@ -340,26 +377,114 @@ export function TripGuide({data,form,onReset,verification,verifying}){
             ))}
           </div>}
           <div className={s.budgetSummary}>
-            {[["Total",activeRate?`${localCurrency} ${convertPrice(data.budget.totalEstimate,activeRate).toLocaleString()}`:`${data.currency} ${Number(data.budget.totalEstimate||0).toLocaleString()}`],["Per Person",activeRate?`${localCurrency} ${convertPrice(data.budget.perPerson,activeRate).toLocaleString()}`:`${data.currency} ${Number(data.budget.perPerson||0).toLocaleString()}`],["Per Night/pp",activeRate?`${localCurrency} ${convertPrice(Math.round(Number(data.budget.perPerson||0)/(data.totalNights||1)),activeRate).toLocaleString()}`:`${data.currency} ${Math.round(Number(data.budget.perPerson||0)/(data.totalNights||1)).toLocaleString()}`]].map(([l,v])=>(
-              <div key={l} className={s.budgetBox}>
-                <div className={s.budgetBoxLabel}>{l}</div>
-                <div className={s.budgetBoxVal}>{v}</div>
-              </div>
-            ))}
+            {(()=>{
+              const totalAdj=budgetAdjustments.accommodation+budgetAdjustments.food;
+              const origTotal=data.budget._originalTotal||data.budget.totalEstimate;
+              const hasAdj=totalAdj!==0;
+              return [["Total",activeRate?`${localCurrency} ${convertPrice(data.budget.totalEstimate,activeRate).toLocaleString()}`:`${data.currency} ${Number(data.budget.totalEstimate||0).toLocaleString()}`,hasAdj?totalAdj:null,hasAdj?`${data.currency} ${Number(origTotal||0).toLocaleString()}`:null],["Per Person",activeRate?`${localCurrency} ${convertPrice(data.budget.perPerson,activeRate).toLocaleString()}`:`${data.currency} ${Number(data.budget.perPerson||0).toLocaleString()}`,null,null],["Per Night/pp",activeRate?`${localCurrency} ${convertPrice(Math.round(Number(data.budget.perPerson||0)/(data.totalNights||1)),activeRate).toLocaleString()}`:`${data.currency} ${Math.round(Number(data.budget.perPerson||0)/(data.totalNights||1)).toLocaleString()}`,null,null]].map(([l,v,diff,orig])=>(
+                <div key={l} className={s.budgetBox}>
+                  <div className={s.budgetBoxLabel}>{l}</div>
+                  {orig&&<div className={s.budgetOriginal}>{orig}</div>}
+                  <div className={s.budgetBoxVal}>{v}</div>
+                  {diff!=null&&diff!==0&&<div className={diff<0?s.budgetSaved:s.budgetIncreased}>{diff<0?`${"\u2193"} Saved ${data.currency} ${Math.abs(Math.round(diff)).toLocaleString()}`:`${"\u2191"} +${data.currency} ${Math.round(diff).toLocaleString()}`}</div>}
+                </div>
+              ));
+            })()}
           </div>
+          {/* ─── Selectable Options: Hotels ─── */}
+          {(()=>{
+            const locations=Object.keys(verification?.hotels||{}).filter(loc=>{
+              const real=(verification.hotels[loc]||[]).filter(h=>h.source!=="Search Links"&&h.price_per_night);
+              return real.length>1;
+            });
+            if(!locations.length) return null;
+            return(<div className={s.budgetOptions}>
+              <div className={s.budgetOptionsTitle}>Accommodation Options</div>
+              <div className={s.budgetOptionsHint}>Select a hotel to update your budget instantly</div>
+              {locations.map(loc=>{
+                const opts=(verification.hotels[loc]||[]).filter(h=>h.source!=="Search Links"&&h.price_per_night);
+                const sel=budgetSelections.hotels[loc]??0;
+                const selPrice=opts[sel]?.price_per_night||0;
+                const nights=data.accommodations?.find(a=>a.location===loc)?.nights||data.totalNights||7;
+                return(<div key={loc} className={s.budgetOptGroup}>
+                  <div className={s.budgetOptGroupLabel}>{loc} ({nights}n)</div>
+                  <div className={s.budgetOptRow}>
+                    {opts.slice(0,5).map((h,i)=>{
+                      const isSelected=i===sel;
+                      const delta=h.price_per_night?(h.price_per_night-selPrice)*nights:0;
+                      return(<button key={i} onClick={()=>selectHotelOption(loc,i)} className={isSelected?s.budgetOptCardSelected:s.budgetOptCard}>
+                        <div className={s.budgetOptName}>{h.name}</div>
+                        <div className={s.budgetOptPrice}>{activeRate?`${localCurrency} ${convertPrice(h.price_per_night,activeRate)}`:`${h.currency||data.currency} ${h.price_per_night}`}/nt</div>
+                        {h.rating&&<div className={s.budgetOptMeta}>{"\u2605"} {h.rating}</div>}
+                        {isSelected?<div className={s.budgetOptSelected}>{"\u2713"} Selected</div>
+                          :delta!==0&&<div className={delta>0?s.budgetOptDeltaUp:s.budgetOptDeltaDown}>{delta>0?"+":""}{activeRate?`${localCurrency} ${convertPrice(Math.abs(delta),activeRate)}`:`${data.currency} ${Math.round(delta)}`}</div>}
+                      </button>);
+                    })}
+                  </div>
+                </div>);
+              })}
+            </div>);
+          })()}
+
+          {/* ─── Selectable Options: Flights ─── */}
+          {(()=>{
+            const vf=(verification?.flights||[]).filter(f=>f.price&&f.source!=="Search Links");
+            if(vf.length<2) return null;
+            const sel=budgetSelections.flights??0;
+            const selPrice=vf[sel]?.price||0;
+            const passengers=(data.adults||2)+(data.children||0);
+            return(<div className={s.budgetOptions}>
+              <div className={s.budgetOptionsTitle}>Flight Options</div>
+              <div className={s.budgetOptionsHint}>Select a flight to update your budget instantly</div>
+              <div className={s.budgetOptRow}>
+                {vf.slice(0,4).map((f,i)=>{
+                  const isSelected=i===sel;
+                  const delta=(f.price-selPrice)*passengers;
+                  return(<button key={i} onClick={()=>selectFlightOption(i)} className={isSelected?s.budgetOptCardSelected:s.budgetOptCard}>
+                    <div className={s.budgetOptName}>{f.airline}</div>
+                    <div className={s.budgetOptPrice}>{activeRate?`${localCurrency} ${convertPrice(f.price,activeRate)}`:`${f.currency||data.currency} ${f.price}`}/pp</div>
+                    <div className={s.budgetOptMeta}>{f.duration||""}{f.stops>=0?` \u2022 ${f.stops===0?"Nonstop":`${f.stops} stop${f.stops>1?"s":""}`}`:""}</div>
+                    {isSelected?<div className={s.budgetOptSelected}>{"\u2713"} Selected</div>
+                      :delta!==0&&<div className={delta>0?s.budgetOptDeltaUp:s.budgetOptDeltaDown}>{delta>0?"+":""}{activeRate?`${localCurrency} ${convertPrice(Math.abs(delta),activeRate)}`:`${data.currency} ${Math.round(delta)}`} total</div>}
+                  </button>);
+                })}
+              </div>
+            </div>);
+          })()}
+
           <div className={s.budgetTable}>
             <table style={{width:"100%",borderCollapse:"collapse"}}>
               <thead><tr style={{background:"rgba(212,168,67,.07)",borderBottom:"1px solid rgba(255,255,255,.08)"}}>{["Category","Total","Per Person","Tip"].map(h=><th key={h} className={s.budgetTh}>{h}</th>)}</tr></thead>
               <tbody>{(data.budget.breakdown||[]).map((row,i)=>(
                 <tr key={i} style={{borderBottom:"1px solid rgba(255,255,255,.04)"}}>
                   <td className={s.budgetTdCat}>{row.category}</td>
-                  <td className={s.budgetTdTotal}>{data.currency} {Number(row.total||0).toLocaleString()}</td>
+                  <td className={s.budgetTdTotal}>
+                    {data.currency} {Number(row.total||0).toLocaleString()}
+                    {row._diff&&row._diff!==0&&<span className={row._diff<0?s.budgetSaved:s.budgetIncreased} style={{marginLeft:6,fontSize:".7rem"}}>{row._diff<0?`${"\u2193"}${Math.abs(Math.round(row._diff))}`:`${"\u2191"}+${Math.round(row._diff)}`}</span>}
+                  </td>
                   <td className={s.budgetTdPp}>{data.currency} {Number(row.perPerson||0).toLocaleString()}</td>
                   <td className={s.budgetTdTip}>{row.tip}</td>
                 </tr>
               ))}</tbody>
             </table>
           </div>
+          {/* Price Trends Graphs — always renders (frontend fallback if backend returned nothing) */}
+          {(()=>{const tm=data.checkIn?new Date(data.checkIn).getMonth()+1:null;return tm?(
+            <PriceTrends
+              priceTrends={verification?.price_trends}
+              destination={data.primaryDestination||data.destinations?.[0]||""}
+              travelMonth={tm}
+              currency={data.currency||"USD"}
+            />
+          ):null;})()}
+          {verifying&&!verification?.price_trends&&(
+            <div className={s.priceTrendsSkeleton}>
+              <div className={s.priceTrendsSkeletonTitle}>Loading price trends across 12 months...</div>
+              <div className={s.priceTrendsSkeletonBars}>
+                {Array.from({length:12}).map((_,i)=><div key={i} className={s.priceTrendsSkeletonBar} style={{height:`${20+Math.random()*60}%`,animationDelay:`${i*0.1}s`}}/>)}
+              </div>
+            </div>
+          )}
         </div>}
 
         {/* SUGGESTIONS */}
@@ -430,6 +555,7 @@ export function TripGuide({data,form,onReset,verification,verifying}){
           </div>
         </div>}
       </div>
+      <SwapModal />
       <div className={s.footer}>
         TripMind v2 — AI Trip Planning + Real-Time Verification
         {verification&&<span> — {verification.agent_statuses?.filter(st=>st.status==="success").length||0} agents verified your trip</span>}

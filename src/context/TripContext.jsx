@@ -41,9 +41,176 @@ export function TripProvider({children}){
     });
   },[]);
 
+  // ─── Swap modal state ─────────────────────────────────────────────────────
+  const[swapModal,setSwapModal]=useState(null);
+  // { type: "hotel"|"restaurant", location, dayIndex, itemIndex, currentPrice, alternatives }
+
+  // ─── Budget adjustments tracking ────────────────────────────────────────────
+  const[budgetAdjustments,setBudgetAdjustments]=useState({ accommodation: 0, food: 0 });
+
+  // ─── Budget selections: tracks which verified option is active per category ──
+  // { hotels: { [location]: index }, flights: index }
+  const[budgetSelections,setBudgetSelections]=useState({ hotels: {}, flights: 0 });
+
+  const selectHotelOption=useCallback((location, index)=>{
+    const prev=budgetSelections.hotels[location]??0;
+    if(prev===index) return;
+    setBudgetSelections(s=>({...s, hotels:{...s.hotels,[location]:index}}));
+    // Recompute budget diff
+    setTripData(td=>{
+      if(!td?.budget?.breakdown) return td;
+      const vh=verification?.hotels?.[location]||[];
+      const oldH=vh[prev];
+      const newH=vh[index];
+      if(!oldH||!newH) return td;
+      const nights=td.accommodations?.find(a=>a.location===location)?.nights||td.totalNights||7;
+      const priceDiff=((newH.price_per_night||0)-(oldH.price_per_night||0))*nights;
+      if(priceDiff===0) return td;
+      setBudgetAdjustments(adj=>({...adj, accommodation: adj.accommodation+priceDiff}));
+      const breakdown=td.budget.breakdown.map(row=>{
+        if(row.category?.toLowerCase().includes("accommod")||row.category?.toLowerCase().includes("hotel")||row.category?.toLowerCase().includes("stay")){
+          const oldTotal=parseFloat(String(row.total).replace(/[^0-9.]/g,""))||0;
+          return{...row, total: String(Math.round(oldTotal+priceDiff)), _diff: (row._diff||0)+priceDiff};
+        }
+        return row;
+      });
+      const oldEstimate=parseFloat(String(td.budget.totalEstimate).replace(/[^0-9.]/g,""))||0;
+      const pp=Math.round((oldEstimate+priceDiff)/(td.adults||2));
+      return{...td, budget:{...td.budget, breakdown, totalEstimate: String(Math.round(oldEstimate+priceDiff)), perPerson: String(pp), _originalTotal: td.budget._originalTotal||td.budget.totalEstimate}};
+    });
+  },[budgetSelections,verification]);
+
+  const selectFlightOption=useCallback((index)=>{
+    const prev=budgetSelections.flights??0;
+    if(prev===index) return;
+    setBudgetSelections(s=>({...s, flights:index}));
+    setTripData(td=>{
+      if(!td?.budget?.breakdown) return td;
+      const vf=verification?.flights||[];
+      const oldF=vf[prev];
+      const newF=vf[index];
+      if(!oldF||!newF||!oldF.price||!newF.price) return td;
+      const passengers=(td.adults||2)+(td.children||0);
+      const priceDiff=(newF.price-oldF.price)*passengers;
+      if(priceDiff===0) return td;
+      const breakdown=td.budget.breakdown.map(row=>{
+        if(row.category?.toLowerCase().includes("flight")||row.category?.toLowerCase().includes("air")||row.category?.toLowerCase().includes("transport")){
+          const oldTotal=parseFloat(String(row.total).replace(/[^0-9.]/g,""))||0;
+          return{...row, total: String(Math.round(oldTotal+priceDiff)), _diff: (row._diff||0)+priceDiff};
+        }
+        return row;
+      });
+      const oldEstimate=parseFloat(String(td.budget.totalEstimate).replace(/[^0-9.]/g,""))||0;
+      const pp=Math.round((oldEstimate+priceDiff)/(td.adults||2));
+      return{...td, budget:{...td.budget, breakdown, totalEstimate: String(Math.round(oldEstimate+priceDiff)), perPerson: String(pp), _originalTotal: td.budget._originalTotal||td.budget.totalEstimate}};
+    });
+  },[budgetSelections,verification]);
+
+  const resetBudgetSelections=useCallback(()=>{
+    setBudgetSelections({hotels:{},flights:0});
+    setBudgetAdjustments({accommodation:0,food:0});
+    setTripData(td=>{
+      if(!td?.budget?._originalTotal) return td;
+      const orig=td.budget._originalTotal;
+      const pp=Math.round(Number(orig)/(td.adults||2));
+      const breakdown=(td.budget.breakdown||[]).map(row=>({...row, _diff:undefined, total: row._originalTotal||row.total}));
+      return{...td, budget:{...td.budget, totalEstimate: orig, perPerson: String(pp), _originalTotal: undefined, breakdown}};
+    });
+  },[]);
+
+  const updateHotel=useCallback((location, index, newHotel)=>{
+    setVerification(v=>{
+      if(!v?.hotels?.[location]) return v;
+      const oldHotel=v.hotels[location][index];
+      const oldPrice=oldHotel?.price_per_night||0;
+      const newPrice=newHotel?.price_per_night||0;
+
+      // Calculate price diff based on total nights
+      const nights=tripData?.totalNights||7;
+      const priceDiff=(newPrice-oldPrice)*nights;
+
+      if(priceDiff!==0){
+        setBudgetAdjustments(adj=>({...adj, accommodation: adj.accommodation+priceDiff}));
+        // Update budget breakdown in tripData
+        setTripData(td=>{
+          if(!td?.budget?.breakdown) return td;
+          const breakdown=td.budget.breakdown.map(row=>{
+            if(row.category?.toLowerCase().includes("accommod")||row.category?.toLowerCase().includes("hotel")||row.category?.toLowerCase().includes("stay")){
+              const oldTotal=parseFloat(String(row.total).replace(/[^0-9.]/g,""))||0;
+              return{...row, total: String(Math.round(oldTotal+priceDiff)), _diff: priceDiff};
+            }
+            return row;
+          });
+          const oldEstimate=parseFloat(String(td.budget.totalEstimate).replace(/[^0-9.]/g,""))||0;
+          return{...td, budget:{...td.budget, breakdown, totalEstimate: String(Math.round(oldEstimate+priceDiff)), _originalTotal: td.budget._originalTotal||td.budget.totalEstimate}};
+        });
+      }
+
+      return{
+        ...v,
+        hotels:{...v.hotels,[location]:v.hotels[location].map((h,i)=>i===index?newHotel:h)}
+      };
+    });
+    setSwapModal(null);
+  },[tripData?.totalNights]);
+
+  const updateDiningTip=useCallback((dayIndex, newDining)=>{
+    setTripData(td=>{
+      if(!td?.days) return td;
+      const oldDining=td.days[dayIndex]?.diningTip;
+      const oldCost=oldDining?.estimatedCostPP||0;
+      const newCost=newDining?.estimatedCostPP||0;
+      const groupSize=(td.adults||2)+(td.children||0);
+      const priceDiff=(newCost-oldCost)*groupSize;
+
+      if(priceDiff!==0){
+        setBudgetAdjustments(adj=>({...adj, food: adj.food+priceDiff}));
+      }
+
+      const newDays=td.days.map((d,i)=>i===dayIndex?{...d, diningTip: newDining}:d);
+
+      if(priceDiff!==0 && td.budget?.breakdown){
+        const breakdown=td.budget.breakdown.map(row=>{
+          if(row.category?.toLowerCase().includes("food")||row.category?.toLowerCase().includes("dining")||row.category?.toLowerCase().includes("meal")){
+            const oldTotal=parseFloat(String(row.total).replace(/[^0-9.]/g,""))||0;
+            return{...row, total: String(Math.round(oldTotal+priceDiff)), _diff: (row._diff||0)+priceDiff};
+          }
+          return row;
+        });
+        const oldEstimate=parseFloat(String(td.budget.totalEstimate).replace(/[^0-9.]/g,""))||0;
+        return{...td, days: newDays, budget:{...td.budget, breakdown, totalEstimate: String(Math.round(oldEstimate+priceDiff)), _originalTotal: td.budget._originalTotal||td.budget.totalEstimate}};
+      }
+
+      return{...td, days: newDays};
+    });
+    setSwapModal(null);
+  },[]);
+
+  const updateAccommodation=useCallback((stayIndex, optionIndex, newOption)=>{
+    setTripData(td=>{
+      if(!td?.accommodations) return td;
+      const oldOpt=td.accommodations[stayIndex]?.options?.[optionIndex];
+      const oldPrice=oldOpt?.pricePerNight||0;
+      const newPrice=newOption?.pricePerNight||0;
+      const nights=td.accommodations[stayIndex]?.nights||td.totalNights||7;
+      const priceDiff=(newPrice-oldPrice)*nights;
+
+      if(priceDiff!==0) setBudgetAdjustments(adj=>({...adj, accommodation: adj.accommodation+priceDiff}));
+
+      return{
+        ...td,
+        accommodations: td.accommodations.map((acc,i)=>
+          i===stayIndex?{...acc, options: acc.options.map((opt,j)=>j===optionIndex?newOption:opt)}:acc
+        )
+      };
+    });
+    setSwapModal(null);
+  },[]);
+
   const reset=useCallback(()=>{
     cancelVerification();
     setTripData(null);setStep(0);setForm(defaultForm);setVerification(null);setVerifying(false);
+    setSwapModal(null);setBudgetAdjustments({accommodation:0,food:0});
   },[cancelVerification]);
 
   const generate=useCallback(async()=>{
@@ -164,8 +331,11 @@ export function TripProvider({children}){
   const value={
     // State
     form,step,loading,loadingPhase,tripData,error,verification,verifying,streamText,
+    swapModal,budgetAdjustments,budgetSelections,
     // Actions
     upd,toggleArr,toggleActivity,setStep,generate,reset,canNext,
+    setSwapModal,updateHotel,updateDiningTip,updateAccommodation,
+    selectHotelOption,selectFlightOption,resetBudgetSelections,
     // Constants
     STEPS,
   };

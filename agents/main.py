@@ -116,6 +116,22 @@ async def verify_stream(req: VerifyRequest):
     )
 
 
+@app.post("/hotels/search")
+async def search_hotels(
+    city: str = "",
+    check_in: str = "",
+    check_out: str = "",
+    adults: int = 2,
+    children: int = 0,
+    max_price: float = 0,
+    currency: str = "USD",
+):
+    """On-demand hotel search for swap feature."""
+    from agents.hotel_agent import run_hotel_agent
+    results = await run_hotel_agent(city, check_in, check_out, adults, children, max_price, currency)
+    return [r.model_dump() for r in results]
+
+
 @app.post("/clear-cache")
 async def clear():
     await clear_cache()

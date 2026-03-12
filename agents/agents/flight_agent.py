@@ -1,4 +1,4 @@
-"""Flight Agent — tries Google Flights → search URLs."""
+"""Flight Agent — tries Amadeus API → Google Flights scraper → search URLs."""
 import logging
 import urllib.parse
 from models import FlightResult
@@ -28,15 +28,29 @@ async def run_flight_agent(
 
     results = []
 
-    # Try Google Flights
-    try:
-        from scrapers.google_flights import scrape_google_flights
-        results = await scrape_google_flights(
-            origin, destination, departure_date, return_date,
-            passengers, currency,
-        )
-    except Exception as e:
-        logger.warning(f"Google Flights failed: {e}")
+    # Priority 1: Amadeus API (if configured)
+    from api_config import get_amadeus_config
+    config = get_amadeus_config()
+    if config["key"] and config["secret"]:
+        try:
+            from api_clients.amadeus import search_flights
+            results = await search_flights(
+                origin, destination, departure_date, return_date,
+                passengers, currency, config,
+            )
+        except Exception as e:
+            logger.warning(f"Amadeus API failed ({e}), falling back to scraper")
+
+    # Priority 2: Google Flights scraper
+    if not results:
+        try:
+            from scrapers.google_flights import scrape_google_flights
+            results = await scrape_google_flights(
+                origin, destination, departure_date, return_date,
+                passengers, currency,
+            )
+        except Exception as e:
+            logger.warning(f"Google Flights scraper failed: {e}")
 
     # Final fallback: generate search URLs
     if not results:

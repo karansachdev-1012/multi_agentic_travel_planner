@@ -1,4 +1,4 @@
-"""Activity Agent — tries Viator → GetYourGuide → search URLs."""
+"""Activity Agent — tries Viator API → Viator scraper → GetYourGuide → search URLs."""
 import logging
 import urllib.parse
 from models import ActivityResult
@@ -25,14 +25,28 @@ async def run_activity_agent(
 
     results = []
 
-    # Try Viator first
-    try:
-        from scrapers.viator import scrape_viator
-        results = await scrape_viator(activity_name, city, max_results=3, currency=currency)
-    except Exception as e:
-        logger.warning(f"Viator failed for '{activity_name}': {e}")
+    # Priority 1: Viator Partner API (if configured)
+    from api_config import get_viator_config
+    config = get_viator_config()
+    if config["key"]:
+        try:
+            from api_clients.viator_api import search_activities
+            results = await search_activities(
+                activity_name, city, currency,
+                max_results=AGENTS["activities"]["max_results"], config=config,
+            )
+        except Exception as e:
+            logger.warning(f"Viator API failed ({e}), falling back to scraper")
 
-    # Try GetYourGuide as supplement/fallback
+    # Priority 2: Viator scraper
+    if not results:
+        try:
+            from scrapers.viator import scrape_viator
+            results = await scrape_viator(activity_name, city, max_results=3, currency=currency)
+        except Exception as e:
+            logger.warning(f"Viator scraper failed for '{activity_name}': {e}")
+
+    # Priority 3: GetYourGuide as supplement/fallback
     try:
         from scrapers.getyourguide import scrape_getyourguide
         gyg_results = await scrape_getyourguide(

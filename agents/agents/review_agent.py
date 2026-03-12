@@ -1,9 +1,8 @@
-"""Review Aggregation Agent — fetches ratings for places in the trip plan."""
+"""Review Aggregation Agent — tries Google Places API → Google Search scraper."""
 import logging
 from models import ReviewResult
 from config import AGENTS
 from cache import get_cached, set_cached
-from scrapers.google_reviews import scrape_google_reviews
 
 logger = logging.getLogger(__name__)
 
@@ -18,6 +17,11 @@ async def run_review_agent(
     """
     if not AGENTS["reviews"]["enabled"]:
         return []
+
+    # Determine which backend to use
+    from api_config import get_google_places_config
+    gp_config = get_google_places_config()
+    use_api = bool(gp_config["key"])
 
     max_results = AGENTS["reviews"]["max_results"]
     results = []
@@ -34,7 +38,24 @@ async def run_review_agent(
             results.append(ReviewResult(**cached))
             continue
 
-        result = await scrape_google_reviews(name, city)
+        result = None
+
+        # Priority 1: Google Places API (if configured)
+        if use_api:
+            try:
+                from api_clients.google_places import get_place_reviews
+                result = await get_place_reviews(name, city, config=gp_config)
+            except Exception as e:
+                logger.warning(f"Google Places API failed for '{name}' ({e}), falling back to scraper")
+
+        # Priority 2: Google Search scraper
+        if result is None or (result.rating is None and result.error):
+            try:
+                from scrapers.google_reviews import scrape_google_reviews
+                result = await scrape_google_reviews(name, city)
+            except Exception as e:
+                logger.warning(f"Google Reviews scraper failed for '{name}': {e}")
+                result = ReviewResult(place_name=name, city=city, error=str(e))
 
         if not result.error and result.rating is not None:
             await set_cached(

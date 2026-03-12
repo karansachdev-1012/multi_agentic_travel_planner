@@ -4,14 +4,14 @@ import os
 AGENTS = {
     "hotels": {
         "enabled": True,
-        "provider": "scraper",  # "scraper" | "serpapi" | "amadeus"
+        "provider": "scraper",  # "scraper" | "booking_api"
         "scrape_sources": ["google_hotels", "booking_com"],
         "max_results": 10,
         "cache_hours": 6,
     },
     "flights": {
         "enabled": True,
-        "provider": "scraper",  # "scraper" | "amadeus" | "serpapi"
+        "provider": "scraper",  # "scraper" | "amadeus"
         "scrape_sources": ["google_flights"],
         "max_results": 5,
         "cache_hours": 1,
@@ -58,23 +58,15 @@ AGENTS = {
         "enabled": True,
         "cache_hours": 24,
     },
+    "price_trends": {
+        "enabled": True,
+        "provider": "scraper",
+        "cache_hours": 24,
+    },
 }
 
-# Optional API keys — add to .env to switch from scraping to APIs
-SERPAPI_KEY = os.getenv("SERPAPI_KEY", "")
-AMADEUS_KEY = os.getenv("AMADEUS_KEY", "")
-AMADEUS_SECRET = os.getenv("AMADEUS_SECRET", "")
-VIATOR_API_KEY = os.getenv("VIATOR_API_KEY", "")
-GOOGLE_PLACES_KEY = os.getenv("GOOGLE_PLACES_KEY", "")
-
-# Auto-detect and upgrade providers when API keys are present
-if SERPAPI_KEY:
-    AGENTS["hotels"]["provider"] = "serpapi"
-    AGENTS["flights"]["provider"] = "serpapi"
-if AMADEUS_KEY and AMADEUS_SECRET:
-    AGENTS["flights"]["provider"] = "amadeus"
-if VIATOR_API_KEY:
-    AGENTS["activities"]["provider"] = "viator_api"
+# Optional API keys — add to .env to switch from scraping to official APIs.
+# Config loading is handled by api_config.py; auto-detection happens in each agent.
 
 # Scraping settings
 USER_AGENTS = [

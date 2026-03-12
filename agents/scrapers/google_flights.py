@@ -7,12 +7,6 @@ from scrapers.base_scraper import new_page, safe_goto
 logger = logging.getLogger(__name__)
 
 
-def build_url(origin: str, destination: str, date: str, passengers: int = 1) -> str:
-    """Build Google Flights search URL."""
-    query = f"flights from {origin} to {destination} on {date}"
-    return f"https://www.google.com/travel/flights?q={urllib.parse.quote(query)}"
-
-
 async def scrape_google_flights(
     origin: str,
     destination: str,
@@ -49,62 +43,66 @@ async def scrape_google_flights(
                 logger.warning("No flight cards found on Google Flights")
                 return results
 
-            flights = await page.evaluate("""() => {
+            flights = await page.evaluate(r"""() => {
                 const results = [];
-                // Try multiple selectors
                 const cards = document.querySelectorAll(
-                    'li[class*="Rk10dc"], [data-resultid], .pIav2d'
+                    'li.pIav2d, li[class*="Rk10dc"], [data-resultid]'
                 );
                 for (const card of cards) {
                     try {
-                        // Airline
-                        const airlineEl = card.querySelector(
-                            '[class*="Ir0Voe"], [class*="airline"], .sSHqwe'
-                        );
-                        // Price
-                        const priceEl = card.querySelector(
-                            '[class*="price"], [class*="YMlIz"], .BVAVmf'
-                        );
-                        // Duration
-                        const durationEl = card.querySelector(
-                            '[class*="duration"], .Ak5kof, .gvkrdb'
-                        );
-                        // Stops
-                        const stopsEl = card.querySelector(
-                            '[class*="stops"], .EfT7Ae, .BbR8Ec'
-                        );
-                        // Times
-                        const timeEls = card.querySelectorAll(
-                            '[class*="time"], .mv1WYe span, .zxVSec'
-                        );
-
-                        const airline = airlineEl?.textContent?.trim() || '';
-                        const priceText = priceEl?.textContent?.trim() || '';
-                        const duration = durationEl?.textContent?.trim() || '';
-                        const stopsText = stopsEl?.textContent?.trim() || '';
-
-                        let depTime = '', arrTime = '';
-                        if (timeEls.length >= 2) {
-                            depTime = timeEls[0]?.textContent?.trim() || '';
-                            arrTime = timeEls[1]?.textContent?.trim() || '';
+                        // Extract price from spans containing "$" sign
+                        let price = null;
+                        for (const span of card.querySelectorAll('span')) {
+                            const t = span.textContent.replace(/[\u202f\xa0]/g, ' ').trim();
+                            const m = t.match(/^\$[\d,]+$/);
+                            if (m) {
+                                price = parseInt(m[0].replace(/[$,]/g, ''));
+                                break;
+                            }
                         }
 
-                        if (airline || priceText) {
-                            const priceMatch = priceText.match(/[\\d,]+/);
-                            const price = priceMatch
-                                ? parseInt(priceMatch[0].replace(/,/g, ''))
-                                : null;
+                        // Get full card text for parsing
+                        const text = card.innerText.replace(/[\u202f\xa0]/g, ' ');
+                        const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
 
-                            const stopsMatch = stopsText.match(/(\\d+)\\s*stop/i);
-                            const stops = stopsText.toLowerCase().includes('nonstop')
-                                ? 0
-                                : stopsMatch
-                                    ? parseInt(stopsMatch[1])
-                                    : -1;
+                        // Airline is typically after the times (3rd-4th line)
+                        let airline = '';
+                        let duration = '';
+                        let stops = -1;
+                        let depTime = '';
+                        let arrTime = '';
 
+                        for (let i = 0; i < lines.length; i++) {
+                            const line = lines[i];
+                            // Departure/arrival times like "12:30 AM"
+                            if (/^\d{1,2}:\d{2}\s*(AM|PM)/.test(line) && !depTime) {
+                                depTime = line;
+                            } else if (/^\d{1,2}:\d{2}\s*(AM|PM)/.test(line) && depTime && !arrTime) {
+                                arrTime = line;
+                            }
+                            // Duration like "8 hr" or "8 hr 45 min"
+                            if (/^\d+\s*hr/.test(line)) {
+                                duration = line;
+                            }
+                            // Airline name (not a number, time, or airport code)
+                            if (airline === '' && i >= 2 && line.length > 3
+                                && !/^\d/.test(line) && !/^[A-Z]{3}/.test(line)
+                                && !line.includes('stop') && !line.includes('hr')
+                                && !line.includes('CO2') && !line.includes('$')
+                                && !line.includes('emissions') && !line.includes('round trip')
+                                && !/^(AM|PM)$/.test(line)) {
+                                airline = line;
+                            }
+                            // Stops
+                            if (/nonstop/i.test(line)) stops = 0;
+                            const sm = line.match(/^(\d+)\s*stop/i);
+                            if (sm) stops = parseInt(sm[1]);
+                        }
+
+                        if (price) {
                             results.push({
                                 airline, price, duration, stops,
-                                depTime, arrTime, stopsText
+                                depTime, arrTime
                             });
                         }
                     } catch(e) {}
@@ -112,17 +110,23 @@ async def scrape_google_flights(
                 return results.slice(0, 10);
             }""")
 
+            def _clean(s):
+                """Normalize Unicode whitespace chars that break Windows console."""
+                if isinstance(s, str):
+                    return s.replace("\u202f", " ").replace("\xa0", " ").strip()
+                return s
+
             for f in flights[:max_results]:
                 if not f.get("airline") and not f.get("price"):
                     continue
                 results.append(
                     FlightResult(
-                        airline=f.get("airline", "Unknown"),
+                        airline=_clean(f.get("airline", "Unknown")),
                         price=f.get("price"),
                         currency=currency,
-                        departure_time=f.get("depTime", ""),
-                        arrival_time=f.get("arrTime", ""),
-                        duration=f.get("duration", ""),
+                        departure_time=_clean(f.get("depTime", "")),
+                        arrival_time=_clean(f.get("arrTime", "")),
+                        duration=_clean(f.get("duration", "")),
                         stops=f.get("stops", -1),
                         source="Google Flights",
                         booking_url=url,

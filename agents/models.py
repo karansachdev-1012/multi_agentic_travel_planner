@@ -130,6 +130,25 @@ class SafetyResult(BaseModel):
     error: Optional[str] = None
 
 
+class MonthlyPrice(BaseModel):
+    """Price data for a single month (used in price trends graphs)."""
+    month: int  # 1-12
+    month_name: str  # "January", "February", etc.
+    avg_flight_price: Optional[float] = None
+    avg_hotel_price: Optional[float] = None
+    tourism_level: str = ""  # peak | shoulder | off-peak
+
+
+class PriceTrendsResult(BaseModel):
+    """Month-by-month price trends for flights and hotels."""
+    origin: str = ""
+    destination: str = ""
+    currency: str = "USD"
+    monthly_prices: list[MonthlyPrice] = []
+    travel_month: int = 0
+    error: Optional[str] = None
+
+
 class SeasonalInsight(BaseModel):
     category: str  # "temperature" | "rain" | "tourism" | "local"
     emoji: str
@@ -181,6 +200,7 @@ class VerifyResponse(BaseModel):
     reviews: list[ReviewResult] = []
     flights: list[FlightResult] = []
     links: list[LinkCheck] = []
+    price_trends: dict[str, PriceTrendsResult] = {}  # keyed by destination
     agent_statuses: list[AgentStatus] = []
     verification_score: float = 0.0  # 0-100
     cached: bool = False

@@ -102,6 +102,41 @@ export async function requestVerification(tripPlan, form) {
   }
 }
 
+// ─── HOTEL SEARCH (for swap feature) ───────────────────────────────────────
+export async function searchHotels(city, checkIn, checkOut, adults = 2, children = 0, maxPrice = 0, currency = "USD") {
+  try {
+    const r = await fetch("/api/hotels/search", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        city, check_in: checkIn, check_out: checkOut,
+        adults, children, max_price: maxPrice, currency,
+      }),
+    });
+    if (!r.ok) return [];
+    return await r.json();
+  } catch {
+    return [];
+  }
+}
+
+// ─── RESTAURANT ALTERNATIVES (for swap feature) ────────────────────────────
+export async function getRestaurantAlternatives(location, date = "", currentName = "", dietary = "") {
+  try {
+    const r = await fetch("/api/restaurants/alternatives", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        location, date, current_name: currentName, dietary,
+      }),
+    });
+    if (!r.ok) return [];
+    return await r.json();
+  } catch {
+    return [];
+  }
+}
+
 // ─── WEATHER CODE HELPERS ───────────────────────────────────────────────────
 export const weatherIcon = (code) => {
   const map = { 0: "\u2600\uFE0F", 1: "\uD83C\uDF24\uFE0F", 2: "\u26C5", 3: "\u2601\uFE0F", 45: "\uD83C\uDF2B\uFE0F", 48: "\uD83C\uDF2B\uFE0F", 51: "\uD83C\uDF26\uFE0F", 53: "\uD83C\uDF26\uFE0F", 55: "\uD83C\uDF27\uFE0F", 61: "\uD83C\uDF26\uFE0F", 63: "\uD83C\uDF27\uFE0F", 65: "\uD83C\uDF27\uFE0F", 71: "\uD83C\uDF28\uFE0F", 73: "\u2744\uFE0F", 75: "\u2744\uFE0F", 80: "\uD83C\uDF26\uFE0F", 81: "\uD83C\uDF27\uFE0F", 82: "\u26C8\uFE0F", 95: "\u26C8\uFE0F" };

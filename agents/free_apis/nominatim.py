@@ -85,14 +85,3 @@ async def verify_place(query: str, near_city: str = "") -> PlaceVerification:
     except Exception as e:
         logger.error(f"Place verification error for '{query}': {e}")
         return PlaceVerification(query=query, found=False)
-
-
-async def verify_places(
-    queries: list[dict[str, str]],
-) -> list[PlaceVerification]:
-    """Verify multiple places. Each query is {name, city}."""
-    results = []
-    for q in queries:
-        result = await verify_place(q.get("name", ""), q.get("city", ""))
-        results.append(result)
-    return results

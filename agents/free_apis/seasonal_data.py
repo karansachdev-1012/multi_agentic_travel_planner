@@ -123,6 +123,11 @@ def classify_tourism(month: int, country_code: str) -> str:
     return "off-peak"
 
 
+def get_all_tourism_levels(country_code: str) -> dict[int, str]:
+    """Get tourism level classification for all 12 months."""
+    return {m: classify_tourism(m, country_code) for m in range(1, 13)}
+
+
 async def get_seasonal(
     destination: str, check_in: str, check_out: str, country_code: str = ""
 ) -> SeasonalResult:

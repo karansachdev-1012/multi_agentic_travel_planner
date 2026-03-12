@@ -113,7 +113,8 @@ async def scrape_viator(
                             duration=duration,
                         )
                     )
-            except Exception:
+            except Exception as e:
+                logger.debug(f"Viator: skipped card parse error: {e}")
                 continue
 
         logger.info(f"Viator: {len(results)} activities found for '{search_query}'")

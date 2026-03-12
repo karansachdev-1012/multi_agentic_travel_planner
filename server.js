@@ -282,7 +282,7 @@ app.post("/api/verify/stream", verifyLimiter, async (req, res) => {
 
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 120000); // 2min for streaming
+    const timeout = setTimeout(() => controller.abort(), 240000); // 4min for streaming (price trends scrapes 12 months)
 
     const resp = await fetch(`${PYTHON_SERVICE_URL}/verify/stream`, {
       method: "POST",
@@ -320,6 +320,100 @@ app.post("/api/verify/stream", verifyLimiter, async (req, res) => {
       res.write(`event: error\ndata: ${JSON.stringify({ error: "Verification unavailable" })}\n\n`);
     }
     res.end();
+  }
+});
+
+// ─── Hotel search proxy (for swap feature) ──────────────────────────────────
+app.post("/api/hotels/search", verifyLimiter, async (req, res) => {
+  try {
+    const { city, check_in, check_out, adults, children, max_price, currency } = req.body;
+    const params = new URLSearchParams({
+      city: city || "",
+      check_in: check_in || "",
+      check_out: check_out || "",
+      adults: String(adults || 2),
+      children: String(children || 0),
+      max_price: String(max_price || 0),
+      currency: currency || "USD",
+    });
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 30000);
+
+    const resp = await fetch(`${PYTHON_SERVICE_URL}/hotels/search?${params}`, {
+      method: "POST",
+      signal: controller.signal,
+    });
+    clearTimeout(timeout);
+
+    if (!resp.ok) {
+      const errText = await resp.text();
+      return res.status(resp.status).json({ error: errText });
+    }
+    res.json(await resp.json());
+  } catch (err) {
+    console.warn("Hotel search failed:", err.message);
+    res.json([]);
+  }
+});
+
+// ─── Restaurant alternatives (via Claude) ───────────────────────────────────
+app.post("/api/restaurants/alternatives", chatLimiter, async (req, res) => {
+  if (!isValidKey(ANTHROPIC_API_KEY)) {
+    return res.status(500).json({ error: "API key not configured" });
+  }
+
+  const { location, date, current_name, dietary } = req.body;
+  const prompt = `You are a travel dining expert. Suggest exactly 4 alternative restaurants near ${location}${date ? ` for a meal on ${date}` : ""}.
+${current_name ? `The traveler wants to swap out "${current_name}" for something different.` : ""}
+${dietary ? `Dietary requirements: ${dietary}` : ""}
+
+Return ONLY a JSON array (no markdown, no explanation) with exactly 4 objects:
+[
+  {
+    "name": "Restaurant Name",
+    "description": "Brief 1-sentence description of cuisine and vibe",
+    "estimatedCostPP": 25,
+    "mapsQuery": "Restaurant Name ${location}"
+  }
+]`;
+
+  try {
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": ANTHROPIC_API_KEY,
+        "anthropic-version": "2023-06-01",
+      },
+      body: JSON.stringify({
+        model: ANTHROPIC_MODEL,
+        max_tokens: 600,
+        messages: [{ role: "user", content: prompt }],
+      }),
+    });
+
+    if (!response.ok) {
+      const errText = await response.text();
+      return res.status(response.status).json({ error: errText });
+    }
+
+    const data = await response.json();
+    const text = data.content?.[0]?.text || "[]";
+
+    // Parse JSON from response (handle markdown wrapping)
+    let alternatives;
+    try {
+      const cleaned = text.replace(/```json?\s*/g, "").replace(/```/g, "").trim();
+      alternatives = JSON.parse(cleaned);
+    } catch {
+      alternatives = [];
+    }
+
+    res.json(alternatives);
+  } catch (err) {
+    console.error("Restaurant alternatives error:", err.message);
+    res.status(500).json({ error: err.message });
   }
 });
 

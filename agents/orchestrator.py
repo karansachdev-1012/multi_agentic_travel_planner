@@ -6,6 +6,7 @@ from models import (
     VerifyRequest, VerifyResponse, AgentStatus,
     WeatherResult, SafetyResult, SeasonalResult, CurrencyResult,
     PlaceVerification, HotelResult, ActivityResult, ReviewResult, FlightResult, LinkCheck,
+    PriceTrendsResult,
 )
 
 logger = logging.getLogger(__name__)
@@ -59,8 +60,10 @@ async def run_agent_task(name: str, coro) -> tuple[str, any, AgentStatus]:
     """Run a single agent and track its status."""
     status = AgentStatus(agent=name, status="running")
     start = time.time()
+    # Price trends: baseline scrape + seasonal estimation (~60s max)
+    timeout = 60 if name.startswith("price_trends:") else 45
     try:
-        result = await asyncio.wait_for(coro, timeout=45)
+        result = await asyncio.wait_for(coro, timeout=timeout)
         elapsed = round((time.time() - start) * 1000)
         count = len(result) if isinstance(result, list) else (1 if result else 0)
         status = AgentStatus(
@@ -72,7 +75,7 @@ async def run_agent_task(name: str, coro) -> tuple[str, any, AgentStatus]:
         elapsed = round((time.time() - start) * 1000)
         status = AgentStatus(
             agent=name, status="failed",
-            duration_ms=elapsed, error="Timeout (45s)",
+            duration_ms=elapsed, error=f"Timeout ({timeout}s)",
         )
         return name, None, status
     except Exception as e:
@@ -123,6 +126,10 @@ def _apply_result(response: VerifyResponse, name: str, result):
     elif name == "links":
         if isinstance(result, list):
             response.links = result
+    elif name.startswith("price_trends:"):
+        dest = name.split(":", 1)[1]
+        if isinstance(result, PriceTrendsResult):
+            response.price_trends[dest] = result
 
 
 def _build_agent_coros(req: VerifyRequest):
@@ -222,6 +229,20 @@ def _build_agent_coros(req: VerifyRequest):
     urls = extract_urls_from_plan(plan)
     if urls:
         agent_coros.append(("links", run_link_agent(urls)))
+
+    # Price Trends — scrape 12 months of flight + hotel prices (primary destination only)
+    from agents.price_trends_agent import run_price_trends_agent
+    from free_apis.travel_advisories import guess_country_code as _guess_cc
+    pt_cc = _guess_cc(primary_dest) or ""
+    agent_coros.append((
+        f"price_trends:{primary_dest}",
+        run_price_trends_agent(
+            req.origin, primary_dest,
+            req.check_in, req.check_out,
+            req.adults, len(req.children_ages),
+            req.currency, pt_cc,
+        ),
+    ))
 
     return agent_coros
 

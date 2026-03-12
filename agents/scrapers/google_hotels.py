@@ -45,68 +45,78 @@ async def scrape_google_hotels(
             if not await safe_goto(page, url, timeout=20000):
                 return results
 
-            # Wait for hotel cards to appear
+            # Wait for hotel cards to appear (Google uses jsname="mutHjb" for cards)
             try:
                 await page.wait_for_selector(
-                    '[data-hotel-id], .pR0Vc, .FGlSad, [jsname="mutHjb"]',
-                    timeout=8000,
+                    '[jsname="mutHjb"], [data-hotel-id], .uaTTDe',
+                    timeout=10000,
                 )
             except Exception:
                 logger.warning("No hotel cards found on Google Hotels")
                 return results
 
             # Extract hotel data from the page
-            hotels = await page.evaluate("""() => {
+            hotels = await page.evaluate(r"""() => {
                 const results = [];
-                // Try multiple selectors for hotel cards
+                // Google Travel uses jsname="mutHjb" or class .uaTTDe for hotel cards
                 const cards = document.querySelectorAll(
-                    '[data-hotel-id], .pR0Vc, .FGlSad'
+                    '[jsname="mutHjb"], [data-hotel-id], .uaTTDe'
                 );
                 for (const card of cards) {
                     try {
-                        const nameEl = card.querySelector(
-                            'h2, .QT7m7, .BgYkof, [class*="title"]'
-                        );
-                        const priceEl = card.querySelector(
-                            '.kixHKb, .MW1oTb, [class*="price"]'
-                        );
-                        const ratingEl = card.querySelector(
-                            '.KFi5wf, .jdzyld, [class*="rating"]'
-                        );
-                        const reviewEl = card.querySelector(
-                            '.jdzyld + span, [class*="review"]'
-                        );
-
+                        // Hotel name is in h2
+                        const nameEl = card.querySelector('h2');
                         const name = nameEl?.textContent?.trim() || '';
-                        let priceText = priceEl?.textContent?.trim() || '';
-                        const ratingText = ratingEl?.textContent?.trim() || '';
-                        const reviewText = reviewEl?.textContent?.trim() || '';
+                        if (!name) continue;
 
-                        if (name) {
-                            // Extract numeric price
-                            const priceMatch = priceText.match(/[\\d,]+/);
-                            const price = priceMatch
-                                ? parseInt(priceMatch[0].replace(/,/g, ''))
-                                : null;
+                        // Find first span containing a dollar price
+                        let price = null;
+                        const allSpans = card.querySelectorAll('span');
+                        for (const span of allSpans) {
+                            const txt = span.textContent.trim();
+                            // Match price like "$156" but not "$156 nightly" compound spans
+                            const m = txt.match(/^\$[\d,]+$/);
+                            if (m) {
+                                price = parseInt(m[0].replace(/[$,]/g, ''));
+                                break;
+                            }
+                        }
 
-                            const ratingMatch = ratingText.match(/[\\d.]+/);
-                            const rating = ratingMatch
-                                ? parseFloat(ratingMatch[0])
-                                : null;
+                        // Find rating like "4.3/5" or "4.6"
+                        let rating = null;
+                        let reviews = null;
+                        for (const span of allSpans) {
+                            const txt = span.textContent.trim();
+                            const rm = txt.match(/^(\d\.\d)\/5$/);
+                            if (rm) {
+                                rating = parseFloat(rm[1]);
+                                continue;
+                            }
+                            // Review count like "(529)" or "(1.8K)"
+                            const revm = txt.match(/^\(([\d,.]+K?)\)$/);
+                            if (revm && rating !== null) {
+                                let rv = revm[1];
+                                if (rv.endsWith('K')) {
+                                    reviews = Math.round(parseFloat(rv) * 1000);
+                                } else {
+                                    reviews = parseInt(rv.replace(/,/g, ''));
+                                }
+                            }
+                        }
 
-                            const reviewMatch = reviewText.match(/[\\d,]+/);
-                            const reviews = reviewMatch
-                                ? parseInt(reviewMatch[0].replace(/,/g, ''))
-                                : null;
-
-                            results.push({
-                                name, price, rating, reviews, priceText
-                            });
+                        if (name && price) {
+                            results.push({ name, price, rating, reviews });
                         }
                     } catch(e) {}
                 }
                 return results.slice(0, 15);
             }""")
+
+            def _clean(s):
+                """Normalize Unicode whitespace for Windows compatibility."""
+                if isinstance(s, str):
+                    return s.replace("\u202f", " ").replace("\xa0", " ").strip()
+                return s
 
             for h in hotels[:max_results]:
                 if not h.get("name"):
@@ -116,7 +126,7 @@ async def scrape_google_hotels(
                     continue
                 results.append(
                     HotelResult(
-                        name=h["name"],
+                        name=_clean(h["name"]),
                         price_per_night=price,
                         currency=currency,
                         rating=h.get("rating"),

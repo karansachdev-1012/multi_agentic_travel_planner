@@ -1,10 +1,10 @@
 \documentclass[11pt,a4paper]{article}
 
 % ── Packages ──────────────────────────────────────────────────────────────────
-\usepackage[margin=1in]{geometry}
+\usepackage[margin=0.9in]{geometry}
 \usepackage{graphicx}
 \usepackage{tikz}
-\usetikzlibrary{shapes.geometric, arrows.meta, positioning, fit, calc, decorations.pathreplacing}
+\usetikzlibrary{shapes.geometric, arrows.meta, positioning, fit, calc, decorations.pathreplacing, backgrounds}
 \usepackage{xcolor}
 \usepackage{hyperref}
 \usepackage{listings}
@@ -14,9 +14,11 @@
 \usepackage{tcolorbox}
 \usepackage{multicol}
 \usepackage{tabularx}
+\usepackage{longtable}
 \usepackage{float}
 \usepackage{caption}
 \usepackage{parskip}
+\usepackage{pdflscape}
 
 % ── Colors ────────────────────────────────────────────────────────────────────
 \definecolor{gold}{HTML}{D4A843}
@@ -28,6 +30,11 @@
 \definecolor{codebg}{HTML}{1E1E2E}
 \definecolor{softgray}{HTML}{F5F5F5}
 \definecolor{linkblue}{HTML}{2563EB}
+\definecolor{apiblue}{HTML}{3B82F6}
+\definecolor{scraperorange}{HTML}{F59E0B}
+\definecolor{errorred}{HTML}{EF4444}
+\definecolor{successgreen}{HTML}{22C55E}
+\definecolor{freepurple}{HTML}{A78BFA}
 
 % ── Hyperref config ──────────────────────────────────────────────────────────
 \hypersetup{
@@ -35,7 +42,7 @@
     linkcolor=linkblue,
     urlcolor=linkblue,
     citecolor=linkblue,
-    pdftitle={TripMind Architecture},
+    pdftitle={TripMind Architecture v3.1},
     pdfauthor={TripMind Team},
 }
 
@@ -59,996 +66,572 @@
 % ── Header / Footer ─────────────────────────────────────────────────────────
 \pagestyle{fancy}
 \fancyhf{}
-\fancyhead[L]{\textsc{TripMind Architecture}}
-\fancyhead[R]{\textsc{v3.0}}
-\fancyfoot[C]{\thepage}
+\fancyhead[L]{\small\textcolor{gold}{\textbf{TripMind}} Architecture v3.1}
+\fancyhead[R]{\small\thepage}
+\fancyfoot[C]{\small\textcolor{gray}{Generated \today}}
 \renewcommand{\headrulewidth}{0.4pt}
 
-% ── Custom tcolorbox styles ──────────────────────────────────────────────────
+% ── tcolorbox styles ────────────────────────────────────────────────────────
+\tcbuselibrary{skins,breakable}
 \newtcolorbox{infobox}[1][]{
-    colback=softgray,
-    colframe=gold,
-    fonttitle=\bfseries,
-    title=#1,
-    arc=2mm,
-    boxrule=0.8pt,
+    colback=softgray, colframe=gold, fonttitle=\bfseries,
+    title=#1, boxrule=0.5pt, arc=2pt, breakable,
+}
+\newtcolorbox{apibox}{
+    colback=apiblue!5, colframe=apiblue, boxrule=0.5pt, arc=2pt,
+}
+\newtcolorbox{scraperbox}{
+    colback=scraperorange!5, colframe=scraperorange, boxrule=0.5pt, arc=2pt,
 }
 
-\newtcolorbox{techbox}[1][]{
-    colback=white,
-    colframe=claudepurple!70,
-    fonttitle=\bfseries,
-    title=#1,
-    arc=2mm,
-    boxrule=0.6pt,
-}
+% ── Custom column type ──────────────────────────────────────────────────────
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
 
 % ══════════════════════════════════════════════════════════════════════════════
 \begin{document}
 
-% ── Title Page ───────────────────────────────────────────────────────────────
 \begin{titlepage}
-\centering
-\vspace*{3cm}
-
-{\Huge\bfseries TripMind}\\[0.5cm]
-{\Large AI Travel Planner with Real-Time Verification}\\[2cm]
-
-{\large\textsc{System Architecture Document}}\\[0.5cm]
-{\large Version 3.0}\\[3cm]
-
-\begin{tikzpicture}
-    \node[draw=gold, line width=2pt, rounded corners=8pt, minimum width=12cm, minimum height=3cm, fill=gold!5] {
-        \begin{minipage}{11cm}
-        \centering
-        \textbf{Three-tier architecture} powering AI-generated travel itineraries\\
-        verified by 10 concurrent agents using free APIs and web scraping.\\[0.3cm]
-        \textit{React 19 + Node.js Express + Python FastAPI + Claude AI}
-        \end{minipage}
-    };
-\end{tikzpicture}
-
-\vfill
-{\small Last updated: March 2026}
+    \centering
+    \vspace*{3cm}
+    {\Huge\bfseries\textcolor{gold}{TripMind}\par}
+    \vspace{0.5cm}
+    {\Large Architecture Reference\par}
+    \vspace{0.3cm}
+    {\large v3.1 --- API + Scraper Dual-Path Architecture\par}
+    \vspace{2cm}
+    {\large\today\par}
+    \vfill
+    {\small
+    React 19 + Vite \textbullet{} Express.js \textbullet{} FastAPI + Playwright \textbullet{} Claude AI\par
+    \vspace{0.3cm}
+    11 verification agents \textbullet{} 4 optional API integrations \textbullet{} 6 web scrapers \textbullet{} 5 free APIs\par
+    }
 \end{titlepage}
 
-% ── Table of Contents ────────────────────────────────────────────────────────
 \tableofcontents
 \newpage
 
 % ══════════════════════════════════════════════════════════════════════════════
-\section{System Overview}
+%  SECTION 1 — Component Reference Table
 % ══════════════════════════════════════════════════════════════════════════════
+\section{Component Reference}
 
-TripMind is an AI-powered travel planning application that generates personalized trip itineraries and then independently verifies every detail---hotel prices, flight costs, weather forecasts, safety advisories, place existence, reviews, and more---through 10 concurrent verification agents.
+Every file in TripMind is listed below, grouped by layer.
+\textbf{API Path} = official API used when the corresponding \texttt{.env} key is set;
+\textbf{Scraper Path} = default free path (no key required).
 
-\begin{infobox}[Key Design Principles]
-\begin{itemize}[nosep]
-    \item \textbf{Split-prompt strategy:} Two Claude API calls (skeleton + days) to avoid token truncation on long trips.
-    \item \textbf{SSE streaming:} Both trip generation and verification stream results to the browser in real time.
-    \item \textbf{Fan-out/fan-in concurrency:} All 10 agents run in parallel via \texttt{asyncio.gather()}.
-    \item \textbf{Graceful degradation:} The app works fully without the Python service (shows AI estimates).
-    \item \textbf{Zero cost APIs:} All verification uses free APIs and web scraping---only the Claude API has a cost.
-    \item \textbf{Fallback chains:} Scraping agents never fully fail; each has 2--3 fallback data sources.
-\end{itemize}
-\end{infobox}
+% ── 1.1 Frontend ─────────────────────────────────────────────────────────────
+\subsection{Frontend (React 19 + Vite)}
 
-% ── High-Level Architecture Diagram ──────────────────────────────────────────
-\subsection{High-Level Architecture}
+\begin{longtable}{@{}L{3cm}L{3.2cm}L{2cm}L{6cm}@{}}
+\toprule
+\textbf{Component} & \textbf{File} & \textbf{Type} & \textbf{Description} \\
+\midrule
+\endhead
+App Shell        & \texttt{src/App.jsx}            & Layout   & Root component; header, step progress bar, routes between form and guide \\
+Trip Context     & \texttt{src/context/ TripContext.jsx} & Context  & Global state: form fields, generation, verification, swap modal, budget adjustments, budget selections (hotel/flight option switching with live total recalculation) \\
+Form Steps       & \texttt{src/components/ FormSteps.jsx} & Wizard   & 9-step trip planning form (origin, destination, dates, budget, vibe, extras, review) \\
+Trip Guide       & \texttt{src/components/ TripGuide.jsx} & Display  & Multi-tab itinerary view: Map, Itinerary, Stays, Flights, Budget, Suggestions, Tips. Filters ``Search Links'' fallback entries from verified hotels/activities. Budget tab has selectable hotel/flight options with live price delta. \\
+Verification Bar & \texttt{src/components/ VerificationBar.jsx} & Widget & Real-time agent completion progress bar \\
+Price Trends     & \texttt{src/components/ PriceTrends.jsx} & Chart    & 12-month flight \& hotel price trend graph; frontend seasonal fallback if backend returns no data \\
+Swap Modal       & \texttt{src/components/ SwapModal.jsx} & Modal    & Hotel/restaurant swap with budget impact \\
+Currency Toggle  & \texttt{src/components/ CurrencyToggle.jsx} & Widget & Currency selector + live conversion \\
+PDF Export       & \texttt{src/components/ PdfExport.jsx} & Export   & Lazy-loads \texttt{@react-pdf/renderer} ($\sim$1.5\,MB) \\
+Safety Badge     & \texttt{src/components/ SafetyBadge.jsx} & Badge    & Safety level with emoji \& color \\
+Rating Badge     & \texttt{src/components/ RatingBadge.jsx} & Badge    & Star rating with review count \\
+Seasonal Panel   & \texttt{src/components/ SeasonalPanel.jsx} & Panel    & Temperature, rain, tourism level, local tips \\
+Loading View     & \texttt{src/components/ LoadingView.jsx} & Screen   & Animated loading with streaming text \\
+Visa Checker     & \texttt{src/components/ VisaChecker.jsx} & Widget   & Passport + destination visa requirements \\
+API Client       & \texttt{src/api.js}             & Module   & All fetch calls: \texttt{askClaudeStream}, \texttt{requestVerification}, \texttt{searchHotels} \\
+Prompts          & \texttt{src/prompts.js}          & Module   & Claude prompt builders: skeleton + day-by-day \\
+Constants        & \texttt{src/constants.js}         & Module   & Image URLs, trip types, dietary options, URL builders (Airbnb/Booking.com accept hotel name for specific search links) \\
+\bottomrule
+\end{longtable}
+
+% ── 1.2 Node.js Backend ─────────────────────────────────────────────────────
+\subsection{Node.js Backend (Express)}
+
+\begin{longtable}{@{}L{3.5cm}L{2.8cm}L{3cm}L{5cm}@{}}
+\toprule
+\textbf{Endpoint} & \textbf{File} & \textbf{Rate Limit} & \textbf{Description} \\
+\midrule
+\endhead
+\texttt{POST /api/chat/stream} & \texttt{server.js} & 10/min & SSE proxy to Anthropic Claude API \\
+\texttt{POST /api/verify/stream} & \texttt{server.js} & 5/min & SSE proxy to Python FastAPI verification \\
+\texttt{POST /api/hotels/search} & \texttt{server.js} & 5/min & On-demand hotel search (swap feature) \\
+\texttt{GET /api/health} & \texttt{server.js} & --- & Health check with API key status \\
+\texttt{POST /api/restaurants/ alternatives} & \texttt{server.js} & 10/min & Claude-powered restaurant swap suggestions \\
+\texttt{POST /api/clear-cache} & \texttt{server.js} & --- & Clear Python agent cache \\
+\texttt{GET /api/verify/health} & \texttt{server.js} & --- & Python service health check \\
+\bottomrule
+\end{longtable}
+
+% ── 1.3 Python Verification Service ─────────────────────────────────────────
+\subsection{Python Verification Service (FastAPI)}
+
+\begin{longtable}{@{}L{3cm}L{3.5cm}L{2cm}L{5.5cm}@{}}
+\toprule
+\textbf{Component} & \textbf{File} & \textbf{Type} & \textbf{Description} \\
+\midrule
+\endhead
+FastAPI App       & \texttt{agents/main.py}          & Entry    & \texttt{/verify}, \texttt{/verify/stream}, \texttt{/hotels/search}, \texttt{/health} \\
+Orchestrator      & \texttt{agents/orchestrator.py}   & Dispatch & \texttt{asyncio.gather()} over 11 agents; 45\,s timeout (180\,s for price trends) \\
+Models            & \texttt{agents/models.py}         & Schema   & Pydantic models: \texttt{VerifyRequest}, \texttt{VerifyResponse}, all result types \\
+Cache             & \texttt{agents/cache.py}          & Storage  & SQLite async cache with per-agent TTL \\
+Config            & \texttt{agents/config.py}         & Config   & \texttt{AGENTS} dict (enabled, provider, cache\_hours per agent) \\
+API Config        & \texttt{agents/api\_config.py}    & Config   & Env-var loader: Amadeus, Booking, Viator, Google Places \\
+\bottomrule
+\end{longtable}
+
+% ── 1.4 Agents ──────────────────────────────────────────────────────────────
+\subsection{Verification Agents}
+
+\begin{longtable}{@{}L{2.2cm}L{3cm}L{1.5cm}L{2.5cm}L{4.5cm}@{}}
+\toprule
+\textbf{Agent} & \textbf{File} & \textbf{Cache} & \textbf{Data Path} & \textbf{Output Model} \\
+\midrule
+\endhead
+Weather     & \texttt{agents/agents/ weather\_agent.py}   & 3\,h   & Open-Meteo (free)        & \texttt{WeatherResult} \\
+Safety      & \texttt{agents/agents/ safety\_agent.py}    & 24\,h  & travel-advisory.info     & \texttt{SafetyResult} \\
+Seasonal    & \texttt{agents/agents/ seasonal\_agent.py}  & 168\,h & Open-Meteo Climate       & \texttt{SeasonalResult} \\
+Currency    & \texttt{agents/agents/ currency\_agent.py}  & 1\,h   & Frankfurter (ECB)        & \texttt{CurrencyResult} \\
+Places      & \texttt{agents/agents/ place\_agent.py}     & 168\,h & Google Places $\to$ Nominatim & \texttt{PlaceVerification} \\
+Hotels      & \texttt{agents/agents/ hotel\_agent.py}     & 6\,h   & Booking API $\to$ Google Hotels $\to$ Booking scraper & \texttt{list[HotelResult]} \\
+Activities  & \texttt{agents/agents/ activity\_agent.py}  & 12\,h  & Viator API $\to$ Viator scraper $\to$ GYG & \texttt{list[ActivityResult]} \\
+Reviews     & \texttt{agents/agents/ review\_agent.py}    & 48\,h  & Google Places $\to$ Google Search scraper & \texttt{list[ReviewResult]} \\
+Flights     & \texttt{agents/agents/ flight\_agent.py}    & 1\,h   & Amadeus $\to$ Google Flights scraper & \texttt{list[FlightResult]} \\
+Links       & \texttt{agents/agents/ link\_agent.py}      & 24\,h  & HTTP HEAD (10 concurrent) & \texttt{list[LinkCheck]} \\
+Price Trends & \texttt{agents/agents/ price\_trends\_agent.py} & 24\,h & Amadeus/Booking API $\to$ scrapers (12 months) & \texttt{PriceTrendsResult} \\
+\bottomrule
+\end{longtable}
+
+% ── 1.5 API Clients ─────────────────────────────────────────────────────────
+\subsection{API Clients (Optional, Key Required)}
+
+\begin{longtable}{@{}L{2.5cm}L{3.5cm}L{3cm}L{4.5cm}@{}}
+\toprule
+\textbf{Provider} & \textbf{File} & \textbf{Env Vars} & \textbf{Functions} \\
+\midrule
+\endhead
+Amadeus     & \texttt{agents/api\_clients/ amadeus.py}      & \texttt{AMADEUS\_API\_KEY}, \texttt{AMADEUS\_API\_SECRET} & \texttt{search\_flights()}, \texttt{\_get\_token()}, \texttt{\_resolve\_iata()} \\
+Booking.com & \texttt{agents/api\_clients/ booking\_api.py}  & \texttt{BOOKING\_API\_KEY}  & \texttt{search\_hotels()} \\
+Viator      & \texttt{agents/api\_clients/ viator\_api.py}   & \texttt{VIATOR\_API\_KEY}   & \texttt{search\_activities()} \\
+Google Places & \texttt{agents/api\_clients/ google\_places.py} & \texttt{GOOGLE\_PLACES\_API\_KEY} & \texttt{verify\_place()}, \texttt{get\_place\_reviews()} \\
+\bottomrule
+\end{longtable}
+
+% ── 1.6 Scrapers ────────────────────────────────────────────────────────────
+\subsection{Scrapers (Default, No Key Required)}
+
+\begin{longtable}{@{}L{2.5cm}L{3.5cm}L{2cm}L{5.5cm}@{}}
+\toprule
+\textbf{Source} & \textbf{File} & \textbf{Method} & \textbf{Notes} \\
+\midrule
+\endhead
+Google Flights  & \texttt{agents/scrapers/ google\_flights.py}  & Playwright & Price, airline, duration, stops from card DOM \\
+Google Hotels   & \texttt{agents/scrapers/ google\_hotels.py}   & Playwright & \texttt{[jsname="mutHjb"]} cards, \texttt{h2} names, \texttt{\$} prices \\
+Booking.com     & \texttt{agents/scrapers/ booking\_com.py}     & Playwright & Property cards with name, price, rating \\
+Viator          & \texttt{agents/scrapers/ viator.py}           & httpx+BS4  & Tour name, price, rating, duration \\
+GetYourGuide    & \texttt{agents/scrapers/ getyourguide.py}     & httpx+BS4  & Activity name, price, rating, duration \\
+Google Reviews  & \texttt{agents/scrapers/ google\_reviews.py}  & httpx+BS4  & Rating, review count, snippets from search \\
+Base Scraper    & \texttt{agents/scrapers/ base\_scraper.py}    & Playwright & Shared browser, anti-detection, \texttt{new\_page()} ctx mgr \\
+\bottomrule
+\end{longtable}
+
+% ── 1.7 Free APIs ───────────────────────────────────────────────────────────
+\subsection{Free APIs (No Key Required)}
+
+\begin{longtable}{@{}L{2.5cm}L{3.5cm}L{3cm}L{4.5cm}@{}}
+\toprule
+\textbf{Service} & \textbf{File} & \textbf{API} & \textbf{Functions} \\
+\midrule
+\endhead
+Open-Meteo       & \texttt{agents/free\_apis/ open\_meteo.py}         & open-meteo.com           & \texttt{get\_weather()}, \texttt{geocode()} \\
+Travel Advisory  & \texttt{agents/free\_apis/ travel\_advisories.py}  & travel-advisory.info     & \texttt{get\_safety()}, \texttt{guess\_country\_code()} \\
+Frankfurter      & \texttt{agents/free\_apis/ frankfurter.py}         & frankfurter.dev (ECB)    & \texttt{get\_rates()}, \texttt{guess\_currencies()} \\
+Nominatim        & \texttt{agents/free\_apis/ nominatim.py}           & nominatim.openstreetmap  & \texttt{verify\_place()}, 1 req/sec limit \\
+Seasonal Data    & \texttt{agents/free\_apis/ seasonal\_data.py}      & climate-api.open-meteo   & \texttt{get\_seasonal()}, \texttt{get\_all\_tourism\_levels()} \\
+\bottomrule
+\end{longtable}
+
+
+% ══════════════════════════════════════════════════════════════════════════════
+%  SECTION 2 — System Overview Diagram
+% ══════════════════════════════════════════════════════════════════════════════
+\newpage
+\section{System Overview}
 
 \begin{figure}[H]
 \centering
+\resizebox{\textwidth}{!}{%
 \begin{tikzpicture}[
-    node distance=1.5cm and 2.5cm,
-    box/.style={draw, rounded corners=4pt, minimum width=3.2cm, minimum height=1.2cm, align=center, font=\small\bfseries},
-    svc/.style={box, fill=nodegreen!15, draw=nodegreen!60},
-    ext/.style={box, fill=claudepurple!10, draw=claudepurple!50},
-    ui/.style={box, fill=reactblue!15, draw=reactblue!60},
-    py/.style={box, fill=pythonyellow!15, draw=pythonyellow!60},
-    arr/.style={-{Stealth[length=3mm]}, thick},
-    darr/.style={-{Stealth[length=3mm]}, thick, dashed},
+    node distance=1.2cm and 1.8cm,
+    every node/.style={font=\sffamily\small},
+    layer/.style={draw, rounded corners=4pt, minimum width=3.2cm, minimum height=1cm, align=center, thick},
+    agent/.style={draw, rounded corners=2pt, minimum width=2.4cm, minimum height=0.7cm, align=center, font=\sffamily\footnotesize},
+    decision/.style={diamond, draw, thick, aspect=2.5, inner sep=1pt, font=\sffamily\footnotesize, align=center},
+    arr/.style={-{Stealth[length=5pt]}, thick},
+    dasharr/.style={-{Stealth[length=5pt]}, thick, dashed},
 ]
 
-% Nodes
-\node[ui] (browser) {Browser\\React 19 + Vite\\{\footnotesize :5173}};
-\node[svc, right=3cm of browser] (express) {Express\\API Gateway\\{\footnotesize :3001}};
-\node[ext, right=3cm of express] (claude) {Anthropic\\Claude API};
-\node[py, below=2cm of express] (fastapi) {FastAPI\\Verification\\{\footnotesize :8000}};
+% ── Layer 1: Browser ──
+\node[layer, fill=reactblue!20, text=black] (browser) {Browser\\[-2pt]\footnotesize React 19 + Vite :5173};
 
-% Agent fan-out
-\node[box, fill=gold!10, draw=gold!60, below left=1.8cm and 0.5cm of fastapi, minimum width=2.2cm, minimum height=0.8cm, font=\scriptsize\bfseries] (a1) {Free APIs\\{\tiny Weather, Safety,}\\{\tiny Seasonal, Currency,}\\{\tiny Places}};
-\node[box, fill=gold!10, draw=gold!60, below=1.8cm of fastapi, minimum width=2.2cm, minimum height=0.8cm, font=\scriptsize\bfseries] (a2) {Scrapers\\{\tiny Hotels, Activities,}\\{\tiny Flights, Reviews}};
-\node[box, fill=gold!10, draw=gold!60, below right=1.8cm and 0.5cm of fastapi, minimum width=2.2cm, minimum height=0.8cm, font=\scriptsize\bfseries] (a3) {HTTP Checks\\{\tiny Link Verification}};
+% ── Layer 2: Express ──
+\node[layer, fill=nodegreen!20, text=black, below=of browser] (express) {Express.js\\[-2pt]\footnotesize Proxy :3001};
 
-% SQLite
-\node[box, fill=gray!10, draw=gray!50, right=1.5cm of fastapi, minimum width=2cm, minimum height=0.8cm, font=\scriptsize\bfseries] (cache) {SQLite\\Cache};
+% ── Layer 3: Claude ──
+\node[layer, fill=claudepurple!20, text=black, below left=1.5cm and 2.5cm of express] (claude) {Claude API\\[-2pt]\footnotesize Anthropic};
+
+% ── Layer 4: FastAPI ──
+\node[layer, fill=pythonyellow!20, text=black, below right=1.5cm and 2.5cm of express] (fastapi) {FastAPI\\[-2pt]\footnotesize Orchestrator :8000};
+
+% ── Layer 5: Agents (left column = free, right column = dual-path) ──
+% Free agents
+\node[agent, fill=freepurple!15, below left=1.5cm and 3.5cm of fastapi] (weather) {Weather};
+\node[agent, fill=freepurple!15, below=0.3cm of weather] (safety) {Safety};
+\node[agent, fill=freepurple!15, below=0.3cm of safety] (seasonal) {Seasonal};
+\node[agent, fill=freepurple!15, below=0.3cm of seasonal] (currency) {Currency};
+\node[agent, fill=freepurple!15, below=0.3cm of currency] (links) {Links};
+
+% Dual-path agents
+\node[agent, fill=gold!20, below right=1.5cm and 0cm of fastapi] (flights) {Flights};
+\node[agent, fill=gold!20, below=0.3cm of flights] (hotels) {Hotels};
+\node[agent, fill=gold!20, below=0.3cm of hotels] (activities) {Activities};
+\node[agent, fill=gold!20, below=0.3cm of activities] (reviews) {Reviews};
+\node[agent, fill=gold!20, below=0.3cm of reviews] (places) {Places};
+\node[agent, fill=gold!20, below=0.3cm of places] (ptrends) {Price Trends};
+
+% ── Decision diamond ──
+\node[decision, fill=gold!10, right=2.5cm of hotels] (apicheck) {API Key\\Set?};
+
+% ── Data sources ──
+\node[agent, fill=apiblue!20, above right=0.5cm and 1.8cm of apicheck] (apis) {Official APIs\\[-2pt]\footnotesize Amadeus, Booking,\\[-2pt]\footnotesize Viator, Google Places};
+\node[agent, fill=scraperorange!20, below right=0.5cm and 1.8cm of apicheck] (scrapers) {Scrapers\\[-2pt]\footnotesize Playwright, httpx+BS4};
+
+% ── Free API sources ──
+\node[agent, fill=freepurple!15, left=2cm of safety] (freeapis) {Free APIs\\[-2pt]\footnotesize Open-Meteo, Frankfurter,\\[-2pt]\footnotesize Nominatim, Advisory};
+
+% ── Cache ──
+\node[layer, fill=softgray, below=0.5cm of currency, minimum width=2.4cm, minimum height=0.6cm, font=\sffamily\footnotesize] (cache) {SQLite Cache};
+
+% ── Arrows ──
+\draw[arr] (browser) -- node[right, font=\footnotesize] {SSE} (express);
+\draw[arr] (express) -- node[above left, font=\footnotesize] {/api/chat} (claude);
+\draw[arr] (express) -- node[above right, font=\footnotesize] {/api/verify} (fastapi);
+
+% Orchestrator to agents
+\foreach \a in {weather, safety, seasonal, currency, links} {
+    \draw[arr, gray] (fastapi.south) -- (\a.north east);
+}
+\foreach \a in {flights, hotels, activities, reviews, places, ptrends} {
+    \draw[arr, gray] (fastapi.south) -- (\a.north);
+}
+
+% Free agents to free APIs
+\foreach \a in {weather, safety, seasonal, currency} {
+    \draw[dasharr, freepurple] (\a.west) -- (freeapis.east);
+}
+
+% Dual-path agents to decision
+\foreach \a in {flights, hotels, activities, reviews, places, ptrends} {
+    \draw[arr, gold] (\a.east) -- (apicheck.west);
+}
+
+% Decision to sources
+\draw[arr, apiblue, thick] (apicheck.north) |- node[above, font=\footnotesize, pos=0.7] {Yes} (apis.west);
+\draw[arr, scraperorange, thick] (apicheck.south) |- node[below, font=\footnotesize, pos=0.7] {No} (scrapers.west);
+\draw[dasharr, errorred] (apis.south) -- node[right, font=\footnotesize] {fallback} (scrapers.north);
+
+% Cache
+\draw[dasharr, gray] (cache.north) -- (currency.south);
+
+% ── Legend ──
+\begin{scope}[shift={($(browser.north west)+(-1.5,0.5)$)}]
+    \node[font=\sffamily\footnotesize\bfseries] at (0,0) {Legend:};
+    \fill[freepurple!15] (0,-0.4) rectangle (0.4,-0.7); \node[right, font=\sffamily\footnotesize] at (0.5,-0.55) {Free (no key)};
+    \fill[gold!20] (3,-0.4) rectangle (3.4,-0.7); \node[right, font=\sffamily\footnotesize] at (3.5,-0.55) {Dual-path (API or scraper)};
+    \fill[apiblue!20] (7.5,-0.4) rectangle (7.9,-0.7); \node[right, font=\sffamily\footnotesize] at (8,-0.55) {Official API};
+    \fill[scraperorange!20] (11,-0.4) rectangle (11.4,-0.7); \node[right, font=\sffamily\footnotesize] at (11.5,-0.55) {Scraper};
+\end{scope}
+
+\end{tikzpicture}
+}%
+\caption{TripMind system architecture. Dual-path agents check for API keys at runtime; if a key is present, the official API is used with scraper fallback on failure.}
+\label{fig:overview}
+\end{figure}
+
+
+% ══════════════════════════════════════════════════════════════════════════════
+%  SECTION 3 — Debug-Mode Execution Flow
+% ══════════════════════════════════════════════════════════════════════════════
+\newpage
+\section{Debug-Mode Execution Flow}
+
+This section traces a complete verification request function-by-function.
+\textcolor{apiblue}{\textbf{Blue}} = API path,
+\textcolor{scraperorange}{\textbf{Orange}} = scraper path,
+\textcolor{errorred}{\textbf{Red}} = error/fallback,
+\textcolor{successgreen}{\textbf{Green}} = success/cache hit.
+
+\subsection{Verification Request Flow}
+
+\begin{figure}[H]
+\centering
+\resizebox{0.95\textwidth}{!}{%
+\begin{tikzpicture}[
+    node distance=0.8cm and 2cm,
+    every node/.style={font=\sffamily\small},
+    step/.style={draw, rounded corners=3pt, minimum width=4cm, minimum height=0.7cm, align=center, thick},
+    decision/.style={diamond, draw, thick, aspect=2.2, inner sep=1pt, font=\sffamily\footnotesize, align=center},
+    arr/.style={-{Stealth[length=5pt]}, thick},
+]
+
+% Entry
+\node[step, fill=softgray] (req) {\texttt{POST /verify/stream}\\[-2pt]\footnotesize Express $\to$ FastAPI};
+\node[step, fill=pythonyellow!15, below=of req] (orch) {\texttt{run\_verification\_streaming()}\\[-2pt]\footnotesize orchestrator.py};
+\node[step, fill=pythonyellow!15, below=of orch] (build) {\texttt{\_build\_agent\_coros(req)}\\[-2pt]\footnotesize Creates 11 (name, coro) pairs};
+\node[step, fill=pythonyellow!15, below=of build] (gather) {\texttt{asyncio.gather(*tasks)}\\[-2pt]\footnotesize Parallel execution};
+
+% Agent detail
+\node[step, fill=gold!15, below left=1.2cm and 2cm of gather] (agent) {\texttt{run\_agent\_task(name, coro)}\\[-2pt]\footnotesize 45\,s timeout};
+
+% Cache check
+\node[decision, fill=successgreen!10, below=1cm of agent] (cachecheck) {Cache\\hit?};
+\node[step, fill=successgreen!20, left=2cm of cachecheck] (cachehit) {\textcolor{successgreen}{\textbf{Return cached}}\\[-2pt]\footnotesize Deserialize Pydantic};
+
+% API check
+\node[decision, fill=apiblue!10, below=1cm of cachecheck] (apicheck) {API key\\set?};
+
+% API path
+\node[step, fill=apiblue!15, left=2cm of apicheck] (apicall) {\textcolor{apiblue}{\textbf{Call official API}}\\[-2pt]\footnotesize amadeus/booking/viator/places};
+\node[decision, fill=apiblue!10, below=0.8cm of apicall] (apisuccess) {API\\success?};
+
+% Scraper path
+\node[step, fill=scraperorange!15, below=1cm of apicheck] (scrape) {\textcolor{scraperorange}{\textbf{Run scraper}}\\[-2pt]\footnotesize Playwright / httpx+BS4};
+\node[decision, fill=scraperorange!10, below=0.8cm of scrape] (scrapesuccess) {Scraper\\success?};
+
+% Fallback
+\node[step, fill=errorred!15, below=0.8cm of scrapesuccess] (fallback) {\textcolor{errorred}{\textbf{Search URL fallback}}\\[-2pt]\footnotesize Google/Kayak/Booking links};
+
+% Success
+\node[step, fill=successgreen!15, right=3cm of scrapesuccess] (success) {\textcolor{successgreen}{\textbf{Cache \& return}}\\[-2pt]\footnotesize \texttt{set\_cached() + SSE emit}};
+
+% Apply
+\node[step, fill=pythonyellow!15, below right=1.2cm and 2cm of gather] (apply) {\texttt{\_apply\_result()}\\[-2pt]\footnotesize Map result to VerifyResponse};
+\node[step, fill=successgreen!20, below=0.8cm of apply] (response) {\texttt{VerifyResponse}\\[-2pt]\footnotesize JSON $\to$ Express $\to$ React};
 
 % Arrows
-\draw[arr] (browser) -- node[above, font=\scriptsize] {SSE} (express);
-\draw[arr] (express) -- node[above, font=\scriptsize] {REST + SSE} (claude);
-\draw[arr] (express) -- node[right, font=\scriptsize] {SSE proxy} (fastapi);
-\draw[arr] (fastapi) -- (a1);
-\draw[arr] (fastapi) -- (a2);
-\draw[arr] (fastapi) -- (a3);
-\draw[darr] (fastapi) -- (cache);
-
-% Labels
-\node[above=0.3cm of browser, font=\footnotesize\color{gray}] {Frontend};
-\node[above=0.3cm of express, font=\footnotesize\color{gray}] {Backend};
-\node[above=0.3cm of claude, font=\footnotesize\color{gray}] {AI};
-\node[left=0.3cm of fastapi, font=\footnotesize\color{gray}] {Python};
-
-\end{tikzpicture}
-\caption{High-level system architecture showing the three services and their connections.}
-\label{fig:architecture}
-\end{figure}
-
-% ── Technology Stack ─────────────────────────────────────────────────────────
-\subsection{Technology Stack}
-
-\begin{table}[H]
-\centering
-\begin{tabularx}{\textwidth}{l l X}
-\toprule
-\textbf{Layer} & \textbf{Technology} & \textbf{Purpose} \\
-\midrule
-Frontend & React 19 + Vite & Component-based UI with HMR \\
-Styling & CSS Modules & Scoped styles with design tokens \\
-State & React Context & Form state, trip data, verification \\
-Backend & Node.js + Express & API gateway, rate limiting, SSE proxy \\
-AI & Anthropic Claude API & Trip itinerary generation (streaming) \\
-Verification & Python FastAPI & Agent orchestration, SSE streaming \\
-Scraping & Playwright + httpx & Browser automation and HTTP scraping \\
-Caching & SQLite (aiosqlite) & TTL-based result caching \\
-PDF & @react-pdf/renderer & Client-side PDF generation (lazy-loaded) \\
-\bottomrule
-\end{tabularx}
-\caption{Technology stack by layer.}
-\end{table}
-
-
-% ══════════════════════════════════════════════════════════════════════════════
-\section{Frontend Architecture}
-% ══════════════════════════════════════════════════════════════════════════════
-
-% ── Component Tree ───────────────────────────────────────────────────────────
-\subsection{Component Tree}
-
-\begin{figure}[H]
-\centering
-\begin{tikzpicture}[
-    every node/.style={draw, rounded corners=3pt, minimum width=2.5cm, minimum height=0.7cm, font=\small, align=center},
-    level 1/.style={sibling distance=5.5cm, level distance=1.5cm},
-    level 2/.style={sibling distance=3.8cm, level distance=1.5cm},
-    level 3/.style={sibling distance=2.8cm, level distance=1.3cm},
-    edge from parent/.style={draw, -{Stealth[length=2mm]}},
-]
-
-\node[fill=reactblue!15] {App}
-    child { node[fill=reactblue!10] {TripProvider}
-        child { node[fill=reactblue!8] {AppInner}
-            child { node[fill=nodegreen!12, minimum width=2cm] {FormSteps\\{\tiny 9-step wizard}} }
-            child { node[fill=gold!12, minimum width=2cm] {LoadingView\\{\tiny SSE progress}} }
-            child { node[fill=claudepurple!10, minimum width=2cm] {TripGuide\\{\tiny 7-tab results}} }
-        }
-    };
+\draw[arr] (req) -- (orch);
+\draw[arr] (orch) -- (build);
+\draw[arr] (build) -- (gather);
+\draw[arr] (gather) -- (agent);
+\draw[arr] (gather) -- (apply);
+\draw[arr] (agent) -- (cachecheck);
+\draw[arr] (cachecheck) -- node[above, font=\footnotesize] {Yes} (cachehit);
+\draw[arr] (cachecheck) -- node[right, font=\footnotesize] {No} (apicheck);
+\draw[arr] (apicheck) -- node[above, font=\footnotesize] {Yes} (apicall);
+\draw[arr] (apicheck) -- node[right, font=\footnotesize] {No} (scrape);
+\draw[arr] (apicall) -- (apisuccess);
+\draw[arr, errorred] (apisuccess) -- node[right, font=\footnotesize] {No} (scrape);
+\draw[arr, successgreen] (apisuccess.east) -| node[above, font=\footnotesize, pos=0.3] {Yes} (success.north);
+\draw[arr] (scrape) -- (scrapesuccess);
+\draw[arr, successgreen] (scrapesuccess) -- node[above, font=\footnotesize] {Yes} (success);
+\draw[arr, errorred] (scrapesuccess) -- node[right, font=\footnotesize] {No} (fallback);
+\draw[arr] (fallback.east) -| (success.south);
+\draw[arr] (cachehit.north) |- (apply.west);
+\draw[arr] (success.north) |- (apply.west);
+\draw[arr] (apply) -- (response);
 
 \end{tikzpicture}
-\caption{React component tree. Only one of FormSteps/LoadingView/TripGuide renders at a time.}
-\label{fig:component-tree}
+}%
+\caption{Execution flow for a single dual-path agent. Free-only agents (weather, safety, etc.) skip the API-key decision and go directly to their free API call.}
+\label{fig:flow}
 \end{figure}
 
-The application has three mutually exclusive view states:
-\begin{enumerate}[nosep]
-    \item \textbf{FormSteps} --- Shown when no trip is being generated and no results exist.
-    \item \textbf{LoadingView} --- Shown during Claude API streaming (skeleton phase and days phase).
-    \item \textbf{TripGuide} --- Shown when trip data is available, with verification running in the background.
-\end{enumerate}
-
-% ── Form Wizard ──────────────────────────────────────────────────────────────
-\subsection{9-Step Form Wizard}
-
-The form collects 24+ fields across 9 steps. Each step is a \texttt{switch} case in \texttt{FormSteps.jsx}:
-
-\begin{figure}[H]
-\centering
-\begin{tikzpicture}[
-    step/.style={draw, rounded corners=3pt, minimum width=1.8cm, minimum height=0.9cm, font=\scriptsize\bfseries, align=center},
-    arr/.style={-{Stealth[length=2mm]}, thick, gold},
-]
-
-\foreach \i/\label/\fields [count=\n from 0] in {
-    1/From/{origin, passport},
-    2/To/{destinations},
-    3/When/{dates, flexibility},
-    4/Who/{adults, children,\\ group, occasions},
-    5/Money/{budget, currency,\\ flexibility},
-    6/Vibe/{trip types, activity\\ level, climate},
-    7/Stay/{accommodation,\\ travel style},
-    8/Details/{dietary, must-haves,\\ avoid, accessibility,\\ pet-friendly, workcation},
-    9/Go/{review + generate}%
-} {
-    \node[step, fill=gold!8] (s\i) at (\n*1.65, 0) {\label};
-    \node[font=\tiny, text width=1.6cm, align=center, below=0.15cm of s\i] {\fields};
-}
-
-\foreach \i [evaluate=\i as \j using int(\i+1)] in {1,...,8} {
-    \draw[arr] (s\i) -- (s\j);
-}
-
-\end{tikzpicture}
-\caption{Form wizard steps and the fields each step collects.}
-\label{fig:form-steps}
-\end{figure}
-
-\begin{techbox}[Form Validation Rules]
-\begin{itemize}[nosep]
-    \item Step 1 (From): Requires non-empty \texttt{origin}.
-    \item Step 3 (When): Requires both \texttt{dateFrom} and \texttt{dateTo}.
-    \item Step 5 (Money): Requires non-empty \texttt{budget}.
-    \item All other steps: freely passable (no required fields).
-\end{itemize}
-\end{techbox}
-
-
-% ── State Management ─────────────────────────────────────────────────────────
-\subsection{State Management}
-
-All application state lives in a single React Context (\texttt{TripContext.jsx}):
-
-\begin{table}[H]
-\centering
-\begin{tabularx}{\textwidth}{l l X}
-\toprule
-\textbf{State} & \textbf{Type} & \textbf{Purpose} \\
-\midrule
-\texttt{form} & Object (24+ fields) & All user inputs from the 9-step wizard \\
-\texttt{step} & Integer (0--8) & Current wizard step \\
-\texttt{loading} & Boolean & True during Claude API calls \\
-\texttt{loadingPhase} & ``skeleton'' | ``days'' & Which generation phase is active \\
-\texttt{streamText} & String & Accumulated streaming text (shown in LoadingView) \\
-\texttt{tripData} & Object | null & Parsed trip plan (skeleton + days merged) \\
-\texttt{verification} & Object | null & Verification results from all 10 agents \\
-\texttt{verifying} & Boolean & True while agents are running \\
-\texttt{error} & String | null & Error message for display \\
-\bottomrule
-\end{tabularx}
-\caption{Key state variables in TripContext.}
-\end{table}
-
-
-% ══════════════════════════════════════════════════════════════════════════════
-\section{Trip Generation Pipeline}
-% ══════════════════════════════════════════════════════════════════════════════
-
-Trip generation uses a two-phase ``split-prompt'' strategy to avoid token truncation on longer trips.
-
-\subsection{Generation Flow}
-
-\begin{figure}[H]
-\centering
-\begin{tikzpicture}[
-    node distance=0.8cm,
-    box/.style={draw, rounded corners=3pt, minimum width=8cm, minimum height=0.9cm, font=\small, align=center},
-    arr/.style={-{Stealth[length=2.5mm]}, thick},
-]
-
-\node[box, fill=gold!10] (s1) {User clicks ``Generate'' on Step 9};
-\node[box, fill=gray!10, below=of s1] (s2) {Clear verification cache via \texttt{POST /api/clear-cache}};
-\node[box, fill=claudepurple!10, below=of s2] (s3) {\textbf{Phase 1:} Stream skeleton prompt to Claude (max 8,000 tokens)};
-\node[box, fill=gray!10, below=of s3] (s4) {Parse JSON --- validate budget > 0 and dayOutline length};
-\node[box, fill=claudepurple!10, below=of s4] (s5) {\textbf{Phase 2:} Stream days prompt to Claude (max $N \times 1400 + 1000$ tokens)};
-\node[box, fill=gray!10, below=of s5] (s6) {Parse JSON --- validate days count $\geq$ nights};
-\node[box, fill=nodegreen!10, below=of s6] (s7) {Merge skeleton + days into \texttt{tripData}};
-\node[box, fill=pythonyellow!10, below=of s7] (s8) {Fire-and-forget: start 10 verification agents};
-
-\foreach \a/\b in {s1/s2, s2/s3, s3/s4, s4/s5, s5/s6, s6/s7, s7/s8} {
-    \draw[arr] (\a) -- (\b);
-}
-
-% Retry annotation
-\draw[arr, dashed, red!60] (s4.east) -- ++(1.5,0) |- node[right, font=\tiny, pos=0.25] {retry (max 2$\times$)} (s3.east);
-
-\end{tikzpicture}
-\caption{Two-phase trip generation pipeline with retry logic.}
-\label{fig:generation-flow}
-\end{figure}
-
-
-\subsection{Split-Prompt Strategy}
-
-\begin{techbox}[Why Two Calls?]
-A single Claude call for a 7-day trip with full activities, accommodations, flights, and budget would require 20,000+ tokens of output. At that length, the model often truncates the JSON mid-object, producing unparseable results. By splitting into skeleton (structure + budget + accommodations) and days (detailed activities), each call stays within a safe token budget.
-\end{techbox}
-
-\textbf{Phase 1 --- Skeleton Prompt} generates:
-\begin{multicols}{2}
-\begin{itemize}[nosep]
-    \item Trip title, tagline, hero image keyword
-    \item Budget breakdown by category
-    \item Flight options with search queries
-    \item Accommodation options per city
-    \item Day outline (day number, date, location, theme)
-    \item Insider tips, packing highlights
-    \item Instagram accounts, YouTube searches
-    \item Suggested splurges with booking keywords
-\end{itemize}
-\end{multicols}
-
-\textbf{Phase 2 --- Days Prompt} receives the skeleton and generates:
-\begin{itemize}[nosep]
-    \item 3--4 activities per day with time, cost, Maps query, and booking keyword.
-    \item One dining tip per day with Maps query.
-    \item Image keywords for hero photos per day.
-\end{itemize}
-
-\subsection{JSON Recovery}
-
-Claude occasionally produces malformed JSON (trailing commas, truncated output, unescaped characters). The \texttt{cleanAndParseJSON()} function applies a three-stage recovery:
-
-\begin{enumerate}[nosep]
-    \item Strip markdown code fences, find outermost \texttt{\{...\}}, remove trailing commas.
-    \item On parse failure: escape unescaped newlines inside JSON strings.
-    \item On second failure: repair truncated JSON---close open strings, remove partial key-value pairs, count unclosed braces/brackets with a state machine, and append closing characters.
-\end{enumerate}
-
-
-% ══════════════════════════════════════════════════════════════════════════════
-\section{Backend (Express API Gateway)}
-% ══════════════════════════════════════════════════════════════════════════════
-
-The Express server on port 3001 serves as a Backend-for-Frontend (BFF), proxying requests to Claude and the Python verification service.
-
-\subsection{Request Flow}
-
-\begin{figure}[H]
-\centering
-\begin{tikzpicture}[
-    node distance=0.6cm and 2cm,
-    mw/.style={draw, rounded corners=2pt, minimum width=2.5cm, minimum height=0.6cm, font=\scriptsize, align=center, fill=gray!10},
-    route/.style={draw, rounded corners=2pt, minimum width=3cm, minimum height=0.6cm, font=\scriptsize\bfseries, align=center},
-    arr/.style={-{Stealth[length=2mm]}, thick},
-]
-
-% Middleware chain
-\node[mw] (m1) {JSON body parser\\{\tiny limit: 1 MB}};
-\node[mw, below=of m1] (m2) {CORS};
-\node[mw, below=of m2] (m3) {Request logger};
-\node[mw, below=of m3] (m4) {General rate limit\\{\tiny 60 req/min}};
-
-\foreach \a/\b in {m1/m2, m2/m3, m3/m4} {
-    \draw[arr] (\a) -- (\b);
-}
-
-% Routes
-\node[route, fill=claudepurple!10, right=2.5cm of m4, yshift=1cm] (r1) {/api/chat/stream\\{\tiny 10 req/min $\to$ Claude}};
-\node[route, fill=pythonyellow!10, right=2.5cm of m4, yshift=-0.5cm] (r2) {/api/verify/stream\\{\tiny 5 req/min $\to$ Python}};
-\node[route, fill=gray!8, right=2.5cm of m4, yshift=-2cm] (r3) {Static files\\{\tiny dist/ + SPA fallback}};
-
-\draw[arr] (m4.east) -- ++(0.8,0) |- (r1.west);
-\draw[arr] (m4.east) -- ++(0.8,0) |- (r2.west);
-\draw[arr] (m4.east) -- ++(0.8,0) |- (r3.west);
-
-\node[above=0.2cm of m1, font=\footnotesize\bfseries\color{gray}] {Middleware Chain};
-\node[above=0.2cm of r1, font=\footnotesize\bfseries\color{gray}] {Route Handlers};
-
-\end{tikzpicture}
-\caption{Express middleware chain and route handlers.}
-\label{fig:express}
-\end{figure}
-
-\subsection{SSE Streaming Proxy}
-
-For Claude streaming (\texttt{/api/chat/stream}), the server:
-\begin{enumerate}[nosep]
-    \item Sets SSE headers: \texttt{Content-Type: text/event-stream}, \texttt{Cache-Control: no-cache}.
-    \item Calls the Anthropic API with \texttt{stream: true}.
-    \item Re-emits \texttt{content\_block\_delta} events as \texttt{data: \{"text": "..."\}}.
-    \item Sends \texttt{data: [DONE]} on \texttt{message\_stop}.
-\end{enumerate}
-
-For verification streaming (\texttt{/api/verify/stream}), the server performs a raw byte pipe---forwarding SSE chunks from the Python service directly to the browser without parsing (120-second timeout).
-
-\subsection{Rate Limits}
-
-\begin{table}[H]
-\centering
-\begin{tabular}{l c c}
-\toprule
-\textbf{Route} & \textbf{Window} & \textbf{Max Requests} \\
-\midrule
-All \texttt{/api/*} routes & 60 seconds & 60 \\
-\texttt{/api/chat}, \texttt{/api/chat/stream} & 60 seconds & 10 \\
-\texttt{/api/verify}, \texttt{/api/verify/stream} & 60 seconds & 5 \\
-\bottomrule
-\end{tabular}
-\caption{Express rate limiting configuration.}
-\end{table}
-
-
-% ══════════════════════════════════════════════════════════════════════════════
-\section{Verification System}
-% ══════════════════════════════════════════════════════════════════════════════
-
-The verification system is a Python FastAPI microservice that runs 10 agents concurrently to cross-check every detail of the AI-generated trip plan against real-world data.
-
-\subsection{Agent Orchestration}
-
-\begin{figure}[H]
-\centering
-\begin{tikzpicture}[
-    node distance=0.5cm,
-    orch/.style={draw, rounded corners=4pt, minimum width=4cm, minimum height=1cm, font=\small\bfseries, align=center, fill=pythonyellow!15},
-    agent/.style={draw, rounded corners=3pt, minimum width=2.8cm, minimum height=0.65cm, font=\scriptsize, align=center},
-    free/.style={agent, fill=nodegreen!10},
-    scrape/.style={agent, fill=gold!10},
-    http/.style={agent, fill=gray!10},
-    arr/.style={-{Stealth[length=2mm]}},
-]
-
-\node[orch] (orch) {Orchestrator\\{\footnotesize asyncio.gather()}};
-
-% Fan out - left column (free APIs)
-\node[free, below left=1.5cm and 2.5cm of orch] (w) {1. Weather\\Open-Meteo};
-\node[free, below=of w] (sa) {2. Safety\\travel-advisory.info};
-\node[free, below=of sa] (se) {3. Seasonal\\Open-Meteo Climate};
-\node[free, below=of se] (cu) {4. Currency\\Frankfurter/ECB};
-\node[free, below=of cu] (pl) {5. Places\\Nominatim/OSM};
-
-% Right column (scrapers + http)
-\node[scrape, below right=1.5cm and 2.5cm of orch] (ho) {6. Hotels\\Playwright};
-\node[scrape, below=of ho] (ac) {7. Activities\\httpx};
-\node[scrape, below=of ac] (re) {8. Reviews\\httpx};
-\node[scrape, below=of re] (fl) {9. Flights\\Playwright};
-\node[http, below=of fl] (li) {10. Links\\HTTP HEAD};
-
-% Arrows from orchestrator
-\foreach \n in {w, sa, se, cu, pl, ho, ac, re, fl, li} {
-    \draw[arr] (orch) -- (\n);
-}
-
-% Cache on the side
-\node[draw, rounded corners=3pt, fill=gray!8, minimum width=1.8cm, minimum height=0.7cm, font=\scriptsize\bfseries, right=1cm of orch] (cache) {SQLite\\Cache};
-\draw[arr, dashed] (orch) -- (cache);
-
-% Labels
-\node[left=0.3cm of w, font=\scriptsize\color{nodegreen!70!black}, rotate=90, anchor=south] {Free APIs};
-\node[right=0.3cm of ho, font=\scriptsize\color{gold!70!black}, rotate=270, anchor=south] {Scrapers};
-
-% SSE output
-\node[draw, rounded corners=3pt, fill=claudepurple!10, minimum width=3cm, minimum height=0.7cm, font=\scriptsize\bfseries, above=1cm of orch] (sse) {SSE Stream to Browser};
-\draw[arr, thick, claudepurple] (orch) -- node[right, font=\tiny] {per-agent updates} (sse);
-
-\end{tikzpicture}
-\caption{Fan-out/fan-in agent orchestration. All 10 agents run in parallel via \texttt{asyncio.gather()}.}
-\label{fig:orchestration}
-\end{figure}
-
-
-\subsection{Agent Details}
-
-Each agent follows a consistent pattern:
-\begin{enumerate}[nosep]
-    \item Check if the agent is enabled in \texttt{config.py}.
-    \item Build a cache key from the input parameters.
-    \item Check \texttt{SQLite cache} for a valid (non-expired) result.
-    \item On cache miss: call the underlying API or scraper.
-    \item On success: store the result in cache with the agent's TTL.
-    \item Return a Pydantic model (or \texttt{None} on failure).
-\end{enumerate}
-
-Each agent coroutine is wrapped in \texttt{asyncio.wait\_for(coro, timeout=45)} to prevent any single agent from blocking the pipeline.
-
-\begin{table}[H]
-\centering
-\small
-\begin{tabularx}{\textwidth}{c l l c X}
-\toprule
-\textbf{\#} & \textbf{Agent} & \textbf{Data Source} & \textbf{TTL} & \textbf{What It Verifies} \\
-\midrule
-1 & Weather & Open-Meteo API & 3h & Daily temp, rain, weather codes \\
-2 & Safety & travel-advisory.info & 24h & Country risk score (0--5), advice \\
-3 & Seasonal & Open-Meteo Climate & 7d & Monthly averages, tourism level \\
-4 & Currency & Frankfurter (ECB) & 1h & Exchange rates vs.\ user's currency \\
-5 & Places & Nominatim / OSM & 7d & Place existence, coordinates, address \\
-6 & Hotels & Google Hotels + Booking & 6h & Real prices, ratings, booking URLs \\
-7 & Activities & Viator + GetYourGuide & 12h & Activity prices, ratings, URLs \\
-8 & Reviews & Google Search & 48h & Star ratings, review counts \\
-9 & Flights & Google Flights & 1h & Prices, airlines, durations \\
-10 & Links & HTTP HEAD & 24h & URL reachability \\
-\bottomrule
-\end{tabularx}
-\caption{All 10 verification agents with their data sources and cache TTLs.}
-\label{tab:agents}
-\end{table}
-
-
-\subsection{Fallback Chains}
-
-Scraping agents are designed to never fully fail. Each has a chain of data sources:
-
-\begin{figure}[H]
-\centering
-\begin{tikzpicture}[
-    node distance=0.3cm and 1cm,
-    src/.style={draw, rounded corners=2pt, minimum width=2.5cm, minimum height=0.6cm, font=\scriptsize, align=center},
-    arr/.style={-{Stealth[length=2mm]}, thick},
-    fail/.style={-{Stealth[length=2mm]}, thick, dashed, red!60},
-]
-
-% Hotels chain
-\node[src, fill=gold!10] (h1) {Google Hotels\\{\tiny Playwright}};
-\node[src, fill=gold!10, right=1cm of h1] (h2) {Booking.com\\{\tiny Playwright}};
-\node[src, fill=gray!10, right=1cm of h2] (h3) {Search URLs\\{\tiny always succeeds}};
-\draw[fail] (h1) -- node[above, font=\tiny] {403/timeout} (h2);
-\draw[fail] (h2) -- node[above, font=\tiny] {403/timeout} (h3);
-\node[left=0.3cm of h1, font=\scriptsize\bfseries] {Hotels:};
-
-% Activities chain
-\node[src, fill=gold!10, below=0.8cm of h1] (a1) {Viator\\{\tiny httpx + BS4}};
-\node[src, fill=gold!10, right=1cm of a1] (a2) {GetYourGuide\\{\tiny httpx + BS4}};
-\node[src, fill=gray!10, right=1cm of a2] (a3) {Search URLs\\{\tiny always succeeds}};
-\draw[fail] (a1) -- node[above, font=\tiny] {403} (a2);
-\draw[fail] (a2) -- node[above, font=\tiny] {403} (a3);
-\node[left=0.3cm of a1, font=\scriptsize\bfseries] {Activities:};
-
-% Flights chain
-\node[src, fill=gold!10, below=0.8cm of a1] (f1) {Google Flights\\{\tiny Playwright}};
-\node[src, fill=gray!10, right=1cm of f1] (f2) {Kayak + Skyscanner\\{\tiny search URLs}};
-\draw[fail] (f1) -- node[above, font=\tiny] {timeout} (f2);
-\node[left=0.3cm of f1, font=\scriptsize\bfseries] {Flights:};
-
-\end{tikzpicture}
-\caption{Fallback chains ensure scraping agents always return at least search URLs.}
-\label{fig:fallback}
-\end{figure}
-
-
-\subsection{Scraper Infrastructure}
-
-The Playwright-based scrapers share a common infrastructure defined in \texttt{base\_scraper.py}:
-
-\begin{itemize}[nosep]
-    \item \textbf{Shared browser instance:} A single Chromium browser is launched lazily and reused across all scraper calls, protected by an \texttt{asyncio.Lock}.
-    \item \textbf{Per-request isolation:} Each scrape creates a new browser context (isolated cookies, storage) with a random user agent, then closes the context when done.
-    \item \textbf{Anti-detection:} Injects JavaScript to hide \texttt{navigator.webdriver}, fake plugin count, set \texttt{window.chrome}, and override \texttt{navigator.languages}.
-    \item \textbf{User-agent rotation:} Randomly selects from 6 user agents (Chrome, Firefox, Safari, Edge across Windows, macOS, and Linux).
-    \item \textbf{Random delays:} 1--3 second random delay after each page navigation to mimic human behavior.
-\end{itemize}
-
-
-% ══════════════════════════════════════════════════════════════════════════════
-\section{Caching System}
-% ══════════════════════════════════════════════════════════════════════════════
-
-All verification results are cached in a local SQLite database (\texttt{agents/cache.db}) to minimize redundant API calls and scraper runs.
-
-\begin{figure}[H]
-\centering
-\begin{tikzpicture}[
-    node distance=1cm,
-    box/.style={draw, rounded corners=3pt, minimum width=5cm, minimum height=0.8cm, font=\small, align=center},
-    arr/.style={-{Stealth[length=2.5mm]}, thick},
-    decision/.style={draw, diamond, aspect=2, minimum width=2.5cm, font=\small, align=center, fill=gold!10},
-]
-
-\node[box, fill=claudepurple!10] (req) {Agent receives request};
-\node[decision, below=of req] (check) {Cache hit\\and valid?};
-\node[box, fill=nodegreen!10, right=3cm of check] (hit) {Return cached result};
-\node[box, fill=gold!10, below=of check] (fetch) {Call API / scraper};
-\node[decision, below=of fetch] (ok) {Success?};
-\node[box, fill=nodegreen!10, right=3cm of ok] (store) {Store in cache, return};
-\node[box, fill=red!10, below=of ok] (fail) {Return None / fallback};
-
-\draw[arr] (req) -- (check);
-\draw[arr] (check) -- node[above, font=\scriptsize] {yes} (hit);
-\draw[arr] (check) -- node[right, font=\scriptsize] {no} (fetch);
-\draw[arr] (fetch) -- (ok);
-\draw[arr] (ok) -- node[above, font=\scriptsize] {yes} (store);
-\draw[arr] (ok) -- node[right, font=\scriptsize] {no} (fail);
-
-\end{tikzpicture}
-\caption{Cache lookup flow for each verification agent.}
-\label{fig:cache-flow}
-\end{figure}
-
-\begin{techbox}[SQLite Schema]
-\begin{lstlisting}[language=SQL]
-CREATE TABLE cache (
-    key        TEXT PRIMARY KEY,
-    value      TEXT NOT NULL,     -- JSON serialized
-    created_at REAL NOT NULL,     -- Unix timestamp
-    ttl_hours  REAL NOT NULL
-);
+\subsection{Function Call Trace (Hotel Agent Example)}
+
+\begin{lstlisting}[language=Python, caption={Hotel agent execution trace}]
+# 1. Entry point (orchestrator.py:250)
+async def run_verification_streaming(req, on_result):
+    coros = _build_agent_coros(req)   # -> [("hotels", run_hotel_agent(...)), ...]
+
+# 2. Agent dispatch (orchestrator.py:59)
+async def run_agent_task("hotels", coro):
+    result = await asyncio.wait_for(coro, timeout=45)
+
+# 3. Hotel agent (agents/hotel_agent.py:11)
+async def run_hotel_agent(city, check_in, check_out, ...):
+    cached = await get_cached(cache_key)       # cache.py:get_cached
+    if cached: return [HotelResult(**h) for h in cached]
+
+    # Priority 1: Booking.com API
+    config = get_booking_config()               # api_config.py
+    if config["key"]:
+        results = await search_hotels(...)      # api_clients/booking_api.py
+
+    # Priority 2: Google Hotels scraper
+    if not results:
+        results = await scrape_google_hotels(...)  # scrapers/google_hotels.py
+
+    # Priority 3: Booking.com scraper
+    if not results:
+        results = await scrape_booking(...)     # scrapers/booking_com.py
+
+    # Priority 4: Search URL fallback
+    if not results:
+        results = [HotelResult(name="...", source="Search Links", ...)]
+
+    await set_cached(cache_key, ...)            # cache.py:set_cached
+    return results
 \end{lstlisting}
-A row is valid when \texttt{time() < created\_at + ttl\_hours $\times$ 3600}.
-Expired rows are purged on startup and lazily on read.
-The entire cache is cleared at the start of each new trip generation.
-\end{techbox}
 
 
 % ══════════════════════════════════════════════════════════════════════════════
-\section{Data Flow: End-to-End}
+%  SECTION 4 — API vs Scraper Decision Reference
 % ══════════════════════════════════════════════════════════════════════════════
+\newpage
+\section{API vs Scraper Decision Reference}
 
-\begin{figure}[H]
-\centering
-\begin{tikzpicture}[
-    node distance=0.6cm,
-    phase/.style={draw, rounded corners=4pt, minimum width=12cm, minimum height=0.9cm, font=\small, align=center},
-    arr/.style={-{Stealth[length=2.5mm]}, thick},
-]
+\subsection{Dual-Path Agents}
 
-\node[phase, fill=reactblue!10] (p1) {\textbf{1. User Input} --- 9-step form wizard collects 24+ fields};
-\node[phase, fill=gold!10, below=of p1] (p2) {\textbf{2. Prompt Building} --- \texttt{prompts.js} constructs skeleton + days prompts from form data};
-\node[phase, fill=nodegreen!10, below=of p2] (p3) {\textbf{3. SSE to Express} --- \texttt{POST /api/chat/stream} with prompt + max tokens};
-\node[phase, fill=claudepurple!10, below=of p3] (p4) {\textbf{4. Claude Generation} --- Express proxies to Anthropic API, streams chunks back};
-\node[phase, fill=reactblue!10, below=of p4] (p5) {\textbf{5. JSON Parse + Merge} --- Frontend accumulates stream, parses JSON, merges skeleton + days};
-\node[phase, fill=pythonyellow!10, below=of p5] (p6) {\textbf{6. Verification Trigger} --- \texttt{POST /api/verify/stream} with trip plan + form data};
-\node[phase, fill=pythonyellow!8, below=of p6] (p7) {\textbf{7. Agent Fan-Out} --- Orchestrator launches 10 agents via \texttt{asyncio.gather()}};
-\node[phase, fill=pythonyellow!5, below=of p7] (p8) {\textbf{8. Per-Agent SSE} --- Each agent completion fires an SSE event to the browser};
-\node[phase, fill=reactblue!10, below=of p8] (p9) {\textbf{9. UI Update} --- VerificationBar shows progress; TripGuide overlays verified data};
+These agents use an official API when the corresponding environment variable is set, falling back to web scraping otherwise.
 
-\foreach \a/\b in {p1/p2, p2/p3, p3/p4, p4/p5, p5/p6, p6/p7, p7/p8, p8/p9} {
-    \draw[arr] (\a) -- (\b);
-}
-
-% Time annotations
-\node[right=0.3cm of p1, font=\tiny\color{gray}] {user};
-\node[right=0.3cm of p4, font=\tiny\color{gray}] {5--15 sec};
-\node[right=0.3cm of p7, font=\tiny\color{gray}] {10--45 sec};
-
-\end{tikzpicture}
-\caption{Complete end-to-end data flow from user input to verified trip display.}
-\label{fig:e2e-flow}
-\end{figure}
-
-
-% ══════════════════════════════════════════════════════════════════════════════
-\section{SSE Streaming Protocol}
-% ══════════════════════════════════════════════════════════════════════════════
-
-Both trip generation and verification use Server-Sent Events (SSE) for real-time streaming.
-
-\subsection{Claude Streaming (Generation)}
-
-\begin{table}[H]
-\centering
-\begin{tabularx}{\textwidth}{l X}
+\begin{longtable}{@{}L{1.8cm}L{2.5cm}L{2.2cm}L{3cm}L{4cm}@{}}
 \toprule
-\textbf{Event} & \textbf{Format} \\
+\textbf{Agent} & \textbf{Default (Scraper)} & \textbf{API Provider} & \textbf{.env Variables} & \textbf{Fallback Chain} \\
 \midrule
-Text chunk & \texttt{data: \{"text": "partial JSON..."\}} \\
-Completion & \texttt{data: [DONE]} \\
-Error & \texttt{event: error\textbackslash ndata: \{"error": "message"\}} \\
+\endhead
+Flights & Google Flights (Playwright) & Amadeus & \texttt{AMADEUS\_API\_KEY}, \texttt{AMADEUS\_API\_SECRET} & Amadeus $\to$ Google Flights scraper $\to$ search URLs \\
+\addlinespace
+Hotels & Google Hotels (Playwright) & Booking.com & \texttt{BOOKING\_API\_KEY} & Booking API $\to$ Google Hotels scraper $\to$ Booking scraper $\to$ search URLs \\
+\addlinespace
+Activities & Viator + GYG (httpx) & Viator & \texttt{VIATOR\_API\_KEY} & Viator API $\to$ Viator scraper $\to$ GYG scraper $\to$ search URLs \\
+\addlinespace
+Reviews & Google Search (httpx) & Google Places & \texttt{GOOGLE\_PLACES\_API\_KEY} & Places API $\to$ Google Search scraper \\
+\addlinespace
+Places & Nominatim (free) & Google Places & \texttt{GOOGLE\_PLACES\_API\_KEY} & Places API $\to$ Nominatim \\
+\addlinespace
+Price Trends & Google Flights + Hotels (Playwright) & Amadeus + Booking & All flight + hotel keys & Per-month: API $\to$ scraper for both flights and hotels \\
 \bottomrule
-\end{tabularx}
-\caption{SSE event format for Claude streaming.}
-\end{table}
+\end{longtable}
 
-\subsection{Verification Streaming}
+\subsection{Free-Only Agents}
 
-\begin{table}[H]
-\centering
-\begin{tabularx}{\textwidth}{l X}
+These agents always use free, keyless APIs. No configuration needed.
+
+\begin{longtable}{@{}L{2cm}L{3.5cm}L{3cm}L{4.5cm}@{}}
 \toprule
-\textbf{Event} & \textbf{Format} \\
+\textbf{Agent} & \textbf{API} & \textbf{Rate Limit} & \textbf{Notes} \\
 \midrule
-Agent result & \texttt{data: \{"agent": "weather:Tokyo", "status": \{...\}, "snapshot": \{...\}\}} \\
-Completion & \texttt{data: [DONE]} \\
+\endhead
+Weather & Open-Meteo Forecast & 10\,k/day & 7--14 day forecast with WMO codes \\
+Safety & travel-advisory.info & Unlimited & 650+ countries, score 0--5 \\
+Seasonal & Open-Meteo Climate & 10\,k/day & 30-year climate averages \\
+Currency & Frankfurter (ECB) & Unlimited & ECB daily rates, 30+ currencies \\
+Links & HTTP HEAD requests & N/A & 10 concurrent, 8\,s timeout each \\
 \bottomrule
-\end{tabularx}
-\caption{SSE event format for verification streaming. Each agent completion fires one event.}
-\end{table}
+\end{longtable}
 
-The \texttt{status} object contains: \texttt{agent} (name), \texttt{status} (success/failed), \texttt{duration\_ms}, \texttt{result\_count}, and optionally \texttt{error}.
+\subsection{Environment Variable Quick Reference}
 
-The \texttt{snapshot} is the cumulative \texttt{VerifyResponse} object with all results received so far.
-
-
-% ══════════════════════════════════════════════════════════════════════════════
-\section{Results Display}
-% ══════════════════════════════════════════════════════════════════════════════
-
-The \texttt{TripGuide} component renders the completed trip in a 7-tab layout:
-
-\begin{table}[H]
-\centering
-\begin{tabularx}{\textwidth}{l X}
+\begin{longtable}{@{}L{4.5cm}L{2cm}L{7cm}@{}}
 \toprule
-\textbf{Tab} & \textbf{Content} \\
+\textbf{Variable} & \textbf{Required} & \textbf{Description} \\
 \midrule
-Map & Google Maps embed with route, numbered stops \\
-Itinerary & Day-by-day activities with weather, ratings, verification badges \\
-Stays & Verified hotel prices + AI accommodation options with booking links \\
-Flights & Verified flight prices + AI estimates with search links \\
-Budget & Currency conversion, breakdown table, live exchange rates \\
-Suggestions & Curated splurges with Maps/booking links \\
-Tips & Insider tips, packing list, Instagram accounts, YouTube searches \\
+\endhead
+\texttt{ANTHROPIC\_API\_KEY} & Yes & Claude API key for trip generation \\
+\texttt{ANTHROPIC\_MODEL} & No & Model override (default: \texttt{claude-sonnet-4-20250514}) \\
+\texttt{PORT} & No & Express server port (default: 3001) \\
+\texttt{PYTHON\_SERVICE\_URL} & No & FastAPI URL (default: \texttt{http://127.0.0.1:8000}) \\
+\midrule
+\texttt{AMADEUS\_API\_KEY} & No & Amadeus client ID (OAuth2) \\
+\texttt{AMADEUS\_API\_SECRET} & No & Amadeus client secret (OAuth2) \\
+\texttt{AMADEUS\_API\_BASE\_URL} & No & Override base URL (default: \texttt{api.amadeus.com}) \\
+\texttt{BOOKING\_API\_KEY} & No & Booking.com Partner API key \\
+\texttt{BOOKING\_AFFILIATE\_ID} & No & Booking.com affiliate ID (optional) \\
+\texttt{VIATOR\_API\_KEY} & No & Viator Partner API key \\
+\texttt{GOOGLE\_PLACES\_API\_KEY} & No & Google Places API key (reviews + places) \\
 \bottomrule
-\end{tabularx}
-\caption{The 7 tabs of the TripGuide results view.}
-\end{table}
+\end{longtable}
 
-\begin{infobox}[Verification Overlay Strategy]
-Every piece of data in the UI displays a verification badge indicating its source:
-\begin{itemize}[nosep]
-    \item \textcolor{nodegreen}{\textbf{Verified}} (green) --- Confirmed by a verification agent with real data.
-    \item \textcolor{claudepurple}{\textbf{AI Estimate}} (purple) --- Generated by Claude, not independently verified.
-\end{itemize}
-This transparency ensures users know which data points are independently confirmed.
-\end{infobox}
+\subsection{Data Contract Summary}
 
+All API clients and scrapers return identical Pydantic models. Normalization happens inside each data source, not downstream.
 
-% ══════════════════════════════════════════════════════════════════════════════
-\section{PDF Export}
-% ══════════════════════════════════════════════════════════════════════════════
-
-PDF generation uses \texttt{@react-pdf/renderer} loaded via dynamic \texttt{import()} to keep the initial bundle small (the library is $\sim$1.5\,MB).
-
-\begin{figure}[H]
-\centering
-\begin{tikzpicture}[
-    node distance=0.7cm,
-    box/.style={draw, rounded corners=3pt, minimum width=7cm, minimum height=0.7cm, font=\small, align=center},
-    arr/.style={-{Stealth[length=2.5mm]}, thick},
-]
-
-\node[box, fill=gold!10] (s1) {User clicks ``Export PDF'' button};
-\node[box, fill=gray!10, below=of s1] (s2) {Dynamic \texttt{import("@react-pdf/renderer")}};
-\node[box, fill=reactblue!10, below=of s2] (s3) {Render \texttt{<TripPdf>} component to blob};
-\node[box, fill=nodegreen!10, below=of s3] (s4) {Create object URL, trigger download};
-
-\foreach \a/\b in {s1/s2, s2/s3, s3/s4} {
-    \draw[arr] (\a) -- (\b);
-}
-
-\node[right=0.5cm of s2, font=\tiny\color{gray}, text width=3cm] {~1.5 MB loaded only on first export};
-
-\end{tikzpicture}
-\caption{Lazy-loaded PDF export flow.}
-\label{fig:pdf-export}
-\end{figure}
-
-The PDF includes: trip header with stats, travel advisory, day-by-day itinerary, weather forecast, accommodations, budget breakdown, and travel tips.
-
+\begin{longtable}{@{}L{3cm}L{4cm}L{6.5cm}@{}}
+\toprule
+\textbf{Model} & \textbf{Key Fields} & \textbf{Sources} \\
+\midrule
+\endhead
+\texttt{FlightResult} & airline, price, duration, stops, booking\_url & \texttt{api\_clients/amadeus.py}, \texttt{scrapers/google\_flights.py} \\
+\texttt{HotelResult} & name, price\_per\_night, rating, booking\_url & \texttt{api\_clients/booking\_api.py}, \texttt{scrapers/google\_hotels.py}, \texttt{scrapers/booking\_com.py} \\
+\texttt{ActivityResult} & name, price, rating, duration, booking\_url & \texttt{api\_clients/viator\_api.py}, \texttt{scrapers/viator.py}, \texttt{scrapers/getyourguide.py} \\
+\texttt{ReviewResult} & place\_name, rating, review\_count, snippets & \texttt{api\_clients/google\_places.py}, \texttt{scrapers/google\_reviews.py} \\
+\texttt{PlaceVerification} & query, found, lat/lon, confidence & \texttt{api\_clients/google\_places.py}, \texttt{free\_apis/nominatim.py} \\
+\texttt{WeatherResult} & days (temp, precip, code, emoji) & \texttt{free\_apis/open\_meteo.py} \\
+\texttt{SafetyResult} & score, level, emoji, advice, alerts & \texttt{free\_apis/travel\_advisories.py} \\
+\texttt{SeasonalResult} & season, tourism\_level, insights & \texttt{free\_apis/seasonal\_data.py} \\
+\texttt{CurrencyResult} & rates dict (rate, inverse, date) & \texttt{free\_apis/frankfurter.py} \\
+\texttt{PriceTrendsResult} & monthly\_prices (12 months flight+hotel) & Reuses flight + hotel agents \\
+\texttt{LinkCheck} & url, status, reachable & \texttt{agents/link\_agent.py} (HTTP HEAD) \\
+\bottomrule
+\end{longtable}
 
 % ══════════════════════════════════════════════════════════════════════════════
-\section{Deployment Architecture}
+%  SECTION 5 — Frontend Data Quality Controls
 % ══════════════════════════════════════════════════════════════════════════════
+\newpage
+\section{Frontend Data Quality Controls}
 
-\subsection{Docker Containers}
+When scrapers fail (blocked by anti-bot, JS not rendered, etc.), agents return ``Search Links'' fallback entries with generic names like ``Hotels in \{city\}'' and null prices. The frontend applies several filters to prevent these from reaching the user.
 
-\begin{figure}[H]
-\centering
-\begin{tikzpicture}[
-    node distance=1.5cm,
-    container/.style={draw, rounded corners=4pt, minimum width=5cm, minimum height=2cm, font=\small, align=center},
-    arr/.style={-{Stealth[length=2.5mm]}, thick},
-]
+\subsection{Search Links Filtering}
 
-\node[container, fill=nodegreen!10] (app) {
-    \textbf{app} container\\[0.2cm]
-    {\footnotesize node:20-alpine}\\
-    {\footnotesize React (pre-built) + Express}\\
-    {\footnotesize Port 3001}
-};
+\begin{longtable}{@{}L{3cm}L{4cm}L{6.5cm}@{}}
+\toprule
+\textbf{Location} & \textbf{Filter} & \textbf{Behavior when all filtered out} \\
+\midrule
+\endhead
+Stays tab (verified hotels) & \texttt{source !== "Search Links" \&\& price\_per\_night} & Falls through to AI Suggested Options with name-specific Airbnb/Booking.com links \\
+Budget tab (hotel options) & Same filter; require $\geq$2 remaining & Section hidden entirely; budget uses AI estimates \\
+Budget tab (flight options) & \texttt{price \&\& source !== "Search Links"}; require $\geq$2 & Section hidden \\
+Flights tab (verified) & \texttt{source !== "Search Links"} & Shows only AI Estimated Flights \\
+Activities (verified match) & \texttt{source !== "Search Links"} & Shows AI Estimate badge instead of verified price \\
+\bottomrule
+\end{longtable}
 
-\node[container, fill=pythonyellow!10, right=2cm of app] (agents) {
-    \textbf{agents} container\\[0.2cm]
-    {\footnotesize python:3.12-slim}\\
-    {\footnotesize FastAPI + Playwright Chromium}\\
-    {\footnotesize Port 8000}
-};
+\subsection{Price Trends Frontend Fallback}
 
-\draw[arr, <->] (app) -- node[above, font=\scriptsize] {HTTP} (agents);
+The \texttt{PriceTrends.jsx} component guarantees charts are never empty:
 
-\node[below=0.5cm of app, font=\scriptsize\color{gray}] {ANTHROPIC\_API\_KEY};
-\node[below=0.5cm of agents, font=\scriptsize\color{gray}] {No secrets needed};
-
-\end{tikzpicture}
-\caption{Docker Compose deployment with two containers.}
-\label{fig:docker}
-\end{figure}
-
-The \texttt{app} container uses a multi-stage Dockerfile:
-\begin{enumerate}[nosep]
-    \item \textbf{Stage 1:} \texttt{node:20-alpine} builds the React frontend (\texttt{npm run build}).
-    \item \textbf{Stage 2:} \texttt{node:20-alpine} with production dependencies only, copies built \texttt{dist/} from Stage 1, runs \texttt{node server.js}.
+\begin{enumerate}
+\item Try backend data: \texttt{verification.price\_trends[destination].monthly\_prices}
+\item If backend returned null/zero prices for all months, generate client-side estimates using seasonal shape curves (same \texttt{MONTH\_SHAPE} multipliers as the Python backend)
+\item Fallback baselines: \$450/flight, \$120/hotel per night, scaled by travel month ratio
+\item When using fallback, displays ``(seasonal estimates)'' label and adjusted disclaimer
 \end{enumerate}
 
-The \texttt{agents} container installs system dependencies for Playwright, then installs Chromium and Python dependencies.
+\subsection{Budget Selection System}
 
-\subsection{Supported Platforms}
+The Budget tab provides interactive hotel and flight option cards when verified data has $\geq$2 real results:
 
-\begin{table}[H]
-\centering
-\begin{tabularx}{\textwidth}{l X}
-\toprule
-\textbf{Platform} & \textbf{Configuration} \\
-\midrule
-Docker Compose & Two services, local development or self-hosted \\
-Railway & Two services linked via internal networking \\
-Render & Two Web Services (Node + Python) \\
-Fly.io & Two apps with internal DNS (\texttt{.internal:8000}) \\
-AWS ECS / Cloud Run / Azure & Container deployment from Docker Hub images \\
-\bottomrule
-\end{tabularx}
-\caption{Supported deployment platforms.}
-\end{table}
-
-
-% ══════════════════════════════════════════════════════════════════════════════
-\section{Security and Error Handling}
-% ══════════════════════════════════════════════════════════════════════════════
-
-\begin{itemize}[nosep]
-    \item \textbf{API key validation:} The server validates the Anthropic key format on startup and rejects placeholder values.
-    \item \textbf{Rate limiting:} Three tiers of rate limiting protect the Claude API and verification service.
-    \item \textbf{Request size limit:} JSON body parsing capped at 1\,MB.
-    \item \textbf{Timeout guards:} 60-second timeout on non-streaming verify, 120-second on streaming, 45-second per-agent timeout.
-    \item \textbf{CORS:} Open CORS for development; should be restricted in production.
-    \item \textbf{No secrets in frontend:} The API key never leaves the server; the browser only talks to Express.
-    \item \textbf{Graceful degradation:} If the Python service is down, the app works fully with AI estimates.
-    \item \textbf{Scraper resilience:} Anti-bot 403s are expected and handled via fallback chains.
+\begin{itemize}
+\item \textbf{selectHotelOption(location, index)}: Switches selected hotel for a location, recalculates accommodation row in budget breakdown, updates total and per-person estimates
+\item \textbf{selectFlightOption(index)}: Same for flights, multiplied by passenger count
+\item \textbf{resetBudgetSelections()}: Restores original AI-estimated budget values
+\item Delta badges show price difference (green = savings, red = more expensive) relative to currently selected option
 \end{itemize}
 
+\subsection{Booking Link Specificity}
 
-% ══════════════════════════════════════════════════════════════════════════════
-\section{Parameter Flow}
-% ══════════════════════════════════════════════════════════════════════════════
+URL builders in \texttt{constants.js} accept an optional \texttt{name} parameter to generate property-specific search links instead of generic city searches:
 
-User form inputs flow to two destinations: the Claude prompts (for AI personalization) and the verification agents (for data lookup).
-
-\begin{figure}[H]
-\centering
-\begin{tikzpicture}[
-    node distance=0.4cm,
-    field/.style={draw, rounded corners=2pt, minimum width=3cm, minimum height=0.5cm, font=\scriptsize, align=center, fill=reactblue!8},
-    target/.style={draw, rounded corners=2pt, minimum width=3.5cm, minimum height=0.5cm, font=\scriptsize\bfseries, align=center},
-    arr/.style={-{Stealth[length=2mm]}},
-]
-
-% Form fields - left
-\node[field] (f1) {destinations, dates};
-\node[field, below=of f1] (f2) {adults, children\_ages};
-\node[field, below=of f2] (f3) {budget, currency};
-\node[field, below=of f3] (f4) {passport\_country};
-\node[field, below=of f4] (f5) {climate, workcation};
-\node[field, below=of f5] (f6) {dietary, accessibility};
-\node[field, below=of f6] (f7) {trip types, activity level};
-\node[field, below=of f7] (f8) {occasions, travel style};
-
-% Targets - right
-\node[target, fill=claudepurple!10, right=4cm of f1, yshift=-0.5cm] (claude) {Claude Prompts\\{\tiny all fields used}};
-\node[target, fill=pythonyellow!10, right=4cm of f4] (agents) {Verification Agents};
-\node[target, fill=gray!10, right=4cm of f7] (prompt) {Claude Prompts Only\\{\tiny no agent can filter}};
-
-% Arrows to both
-\foreach \f in {f1, f2, f3} {
-    \draw[arr] (\f.east) -- (claude.west |- \f);
-    \draw[arr, dashed] (\f.east) -- (agents.west |- \f);
-}
-\draw[arr] (f4.east) -- (claude.west |- f4);
-\draw[arr, dashed] (f4.east) -- (agents.west |- f4);
-\draw[arr] (f5.east) -- (claude.west |- f5);
-
-% Arrows to Claude only
-\foreach \f in {f6, f7, f8} {
-    \draw[arr] (\f.east) -- (prompt.west |- \f);
-}
-
-% Annotations
-\node[right=0.2cm of agents, font=\tiny, text width=3cm, align=left] {
-    children $\to$ hotels, flights\\
-    passport $\to$ safety\\
-    dates $\to$ weather, seasonal\\
-    currency $\to$ all prices
-};
-
-\end{tikzpicture}
-\caption{Parameter flow from form fields to Claude prompts and verification agents.}
-\label{fig:param-flow}
-\end{figure}
-
-
-% ══════════════════════════════════════════════════════════════════════════════
-\section{Pydantic Data Models}
-% ══════════════════════════════════════════════════════════════════════════════
-
-The Python verification service uses Pydantic models for all request/response schemas.
-
-\begin{table}[H]
-\centering
-\small
-\begin{tabularx}{\textwidth}{l X}
-\toprule
-\textbf{Model} & \textbf{Key Fields} \\
-\midrule
-\texttt{VerifyRequest} & \texttt{trip\_plan}, destinations, dates, adults, children\_ages, passport\_country, currency, budget \\
-\texttt{VerifyResponse} & \texttt{weather\{\}}, \texttt{safety\{\}}, \texttt{seasonal\{\}}, \texttt{currency}, \texttt{places[]}, \texttt{hotels\{\}}, \texttt{activities[]}, \texttt{reviews[]}, \texttt{flights[]}, \texttt{links[]}, \texttt{agent\_statuses[]}, \texttt{verification\_score} \\
-\texttt{AgentStatus} & agent name, status (success/failed), duration\_ms, result\_count, error \\
-\texttt{WeatherDay} & date, temp\_high, temp\_low, precipitation, weather\_code, icon \\
-\texttt{SafetyResult} & score (0--5), level, emoji, alerts[], advice \\
-\texttt{HotelResult} & name, price\_per\_night, rating, review\_count, source, booking\_url \\
-\texttt{FlightResult} & airline, price, duration, stops, source, booking\_url \\
-\texttt{PlaceVerification} & found (bool), lat, lon, address, confidence, maps\_url \\
-\texttt{ReviewResult} & place\_name, rating (1--5), review\_count, snippets[] \\
-\bottomrule
-\end{tabularx}
-\caption{Key Pydantic models and their fields.}
-\end{table}
-
-
-% ══════════════════════════════════════════════════════════════════════════════
-\section{Configuration}
-% ══════════════════════════════════════════════════════════════════════════════
-
-Agent behavior is controlled by \texttt{agents/config.py}:
-
-\begin{itemize}[nosep]
-    \item Each agent has an \texttt{enabled} flag that can be toggled off.
-    \item Optional API keys (\texttt{SERPAPI\_KEY}, \texttt{AMADEUS\_KEY}, \texttt{VIATOR\_API\_KEY}, \texttt{GOOGLE\_PLACES\_KEY}) auto-upgrade agents from scraping to paid API providers when set.
-    \item Scraping parameters: viewport size ($1920 \times 1080$), delay range (1--3 seconds), 6 user agents for rotation.
+\begin{itemize}
+\item \texttt{airbnbUrl(city, ci, co, adults, children, maxB, name)} --- searches ``\{name\}, \{city\}''
+\item \texttt{bookingUrl(city, ci, co, adults, name)} --- same pattern
+\item Activity links use \texttt{bookingKeyword + location} for Viator/GYG/TripAdvisor searches
+\item Verified activities show direct \texttt{booking\_url} when the scraper/API found an exact match
 \end{itemize}
-
-
-% ══════════════════════════════════════════════════════════════════════════════
-\section{Cost Analysis}
-% ══════════════════════════════════════════════════════════════════════════════
-
-\begin{table}[H]
-\centering
-\begin{tabularx}{\textwidth}{l c X}
-\toprule
-\textbf{Component} & \textbf{Cost} & \textbf{Notes} \\
-\midrule
-All 10 verification agents & \$0 & Free APIs + web scraping \\
-Claude API (per trip) & \$0.01--0.05 & Two API calls: skeleton + days \\
-Hosting (Docker) & Variable & Depends on platform \\
-\bottomrule
-\end{tabularx}
-\caption{Cost breakdown per trip generation.}
-\end{table}
-
-
-% ══════════════════════════════════════════════════════════════════════════════
-\section*{Appendix: File Map}
-% ══════════════════════════════════════════════════════════════════════════════
-
-\begin{table}[H]
-\centering
-\small
-\begin{tabularx}{\textwidth}{l X}
-\toprule
-\textbf{File} & \textbf{Responsibility} \\
-\midrule
-\multicolumn{2}{l}{\textit{Frontend}} \\
-\texttt{src/main.jsx} & React entry point \\
-\texttt{src/App.jsx} & App shell, view routing \\
-\texttt{src/context/TripContext.jsx} & All state, generation logic \\
-\texttt{src/prompts.js} & Claude prompt construction \\
-\texttt{src/api.js} & HTTP client, SSE reader, JSON parser \\
-\texttt{src/hooks/useVerification.js} & Verification SSE hook \\
-\texttt{src/components/FormSteps.jsx} & 9-step wizard \\
-\texttt{src/components/TripGuide.jsx} & 7-tab results display \\
-\texttt{src/components/PdfExport.jsx} & Lazy PDF generation \\
-\midrule
-\multicolumn{2}{l}{\textit{Backend}} \\
-\texttt{server.js} & Express gateway, SSE proxy \\
-\midrule
-\multicolumn{2}{l}{\textit{Python Verification}} \\
-\texttt{agents/main.py} & FastAPI app, SSE endpoint \\
-\texttt{agents/orchestrator.py} & Parallel agent dispatch \\
-\texttt{agents/models.py} & Pydantic schemas \\
-\texttt{agents/config.py} & Agent toggles, scraping config \\
-\texttt{agents/cache.py} & SQLite TTL cache \\
-\texttt{agents/agents/*.py} & 10 agent wrappers \\
-\texttt{agents/scrapers/*.py} & Playwright + httpx scrapers \\
-\texttt{agents/free\_apis/*.py} & Free API integrations \\
-\bottomrule
-\end{tabularx}
-\caption{Complete file map with responsibilities.}
-\end{table}
 
 \end{document}

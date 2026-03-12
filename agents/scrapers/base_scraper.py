@@ -75,11 +75,3 @@ async def safe_goto(page: Page, url: str, timeout: int = 30000) -> bool:
     except Exception as e:
         logger.warning(f"Navigation failed for {url}: {e}")
         return False
-
-
-async def close_browser():
-    """Close the shared browser."""
-    global _browser
-    if _browser and _browser.is_connected():
-        await _browser.close()
-        _browser = None

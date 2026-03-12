@@ -1,4 +1,4 @@
-"""Hotel Agent — tries Google Hotels → Booking.com → search URLs."""
+"""Hotel Agent — tries Booking.com API → Google Hotels scraper → Booking.com scraper → search URLs."""
 import logging
 import urllib.parse
 from models import HotelResult
@@ -29,17 +29,31 @@ async def run_hotel_agent(
 
     results = []
 
-    # Try Google Hotels first
-    try:
-        from scrapers.google_hotels import scrape_google_hotels
-        results = await scrape_google_hotels(
-            city, check_in, check_out, adults, max_price, currency,
-            children=children,
-        )
-    except Exception as e:
-        logger.warning(f"Google Hotels failed for {city}: {e}")
+    # Priority 1: Booking.com Partner API (if configured)
+    from api_config import get_booking_config
+    config = get_booking_config()
+    if config["key"]:
+        try:
+            from api_clients.booking_api import search_hotels
+            results = await search_hotels(
+                city, check_in, check_out, adults, children,
+                max_price, currency, config,
+            )
+        except Exception as e:
+            logger.warning(f"Booking.com API failed ({e}), falling back to scraper")
 
-    # Fallback to Booking.com
+    # Priority 2: Google Hotels scraper
+    if not results:
+        try:
+            from scrapers.google_hotels import scrape_google_hotels
+            results = await scrape_google_hotels(
+                city, check_in, check_out, adults, max_price, currency,
+                children=children,
+            )
+        except Exception as e:
+            logger.warning(f"Google Hotels failed for {city}: {e}")
+
+    # Priority 3: Booking.com scraper
     if not results:
         try:
             from scrapers.booking_com import scrape_booking
@@ -48,7 +62,7 @@ async def run_hotel_agent(
                 children=children,
             )
         except Exception as e:
-            logger.warning(f"Booking.com fallback failed for {city}: {e}")
+            logger.warning(f"Booking.com scraper failed for {city}: {e}")
 
     children_param = f"&group_children={children}" if children > 0 else ""
     # Final fallback: generate search URLs (never fails)

@@ -1465,3 +1465,213 @@
 .locationWrap {
   margin-bottom: 18px;
 }
+
+/* ─── Swap Buttons ───────────────────────────────────────────────────────── */
+.swapBtn {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  background: transparent;
+  color: #d4a843;
+  border: 1px solid rgba(212, 168, 67, .35);
+  border-radius: 20px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .2s;
+  white-space: nowrap;
+}
+.swapBtn:hover {
+  background: rgba(212, 168, 67, .12);
+  border-color: #d4a843;
+}
+
+.swapBtnSmall {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  background: transparent;
+  color: #e88870;
+  border: 1px solid rgba(232, 136, 112, .3);
+  border-radius: 20px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 9px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .2s;
+  margin-left: 6px;
+  white-space: nowrap;
+}
+.swapBtnSmall:hover {
+  background: rgba(232, 136, 112, .1);
+  border-color: #e88870;
+}
+
+/* ─── Budget Diff Indicators ────────────────────────────────────────────── */
+.budgetOriginal {
+  font-size: .75rem;
+  color: rgba(240, 235, 224, .35);
+  text-decoration: line-through;
+  margin-bottom: 2px;
+}
+
+.budgetSaved {
+  font-size: .75rem;
+  color: #4caf8e;
+  font-weight: 600;
+}
+
+.budgetIncreased {
+  font-size: .75rem;
+  color: #e87070;
+  font-weight: 600;
+}
+
+/* ─── Budget Options (selectable cards with delta badges) ──────────────── */
+.budgetOptions {
+  margin: 1.5rem 0;
+  padding: 1.2rem;
+  background: rgba(20, 18, 16, .5);
+  border: 1px solid rgba(212, 168, 67, .1);
+  border-radius: 14px;
+}
+.budgetOptionsTitle {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.15rem;
+  color: #d4a843;
+  margin-bottom: 2px;
+}
+.budgetOptionsHint {
+  font-size: .72rem;
+  color: rgba(240, 235, 224, .35);
+  margin-bottom: .8rem;
+}
+.budgetOptGroup {
+  margin-bottom: 1rem;
+}
+.budgetOptGroup:last-child { margin-bottom: 0; }
+.budgetOptGroupLabel {
+  font-size: .78rem;
+  color: rgba(240, 235, 224, .6);
+  margin-bottom: .5rem;
+  font-weight: 500;
+}
+.budgetOptRow {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+.budgetOptCard, .budgetOptCardSelected {
+  flex: 0 0 auto;
+  min-width: 150px;
+  max-width: 200px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all .2s;
+  text-align: left;
+  font-family: 'DM Sans', sans-serif;
+}
+.budgetOptCard {
+  background: rgba(30, 28, 24, .6);
+  border: 1px solid rgba(255, 255, 255, .06);
+  color: rgba(240, 235, 224, .75);
+}
+.budgetOptCard:hover {
+  border-color: rgba(212, 168, 67, .3);
+  background: rgba(40, 36, 30, .7);
+}
+.budgetOptCardSelected {
+  background: rgba(212, 168, 67, .08);
+  border: 1.5px solid rgba(212, 168, 67, .4);
+  color: rgba(240, 235, 224, .9);
+}
+.budgetOptName {
+  font-size: .78rem;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 3px;
+}
+.budgetOptPrice {
+  font-size: .85rem;
+  font-weight: 600;
+  color: #d4a843;
+  margin-bottom: 2px;
+}
+.budgetOptMeta {
+  font-size: .68rem;
+  color: rgba(240, 235, 224, .4);
+  margin-bottom: 4px;
+}
+.budgetOptSelected {
+  font-size: .7rem;
+  color: #4caf8e;
+  font-weight: 600;
+}
+.budgetOptDeltaUp {
+  font-size: .72rem;
+  color: #e87070;
+  font-weight: 600;
+}
+.budgetOptDeltaDown {
+  font-size: .72rem;
+  color: #4caf8e;
+  font-weight: 600;
+}
+.resetBtn {
+  font-family: 'DM Sans', sans-serif;
+  font-size: .72rem;
+  padding: 5px 12px;
+  border-radius: 6px;
+  border: 1px solid rgba(212, 168, 67, .25);
+  background: rgba(212, 168, 67, .08);
+  color: #d4a843;
+  cursor: pointer;
+  transition: all .2s;
+  white-space: nowrap;
+}
+.resetBtn:hover {
+  background: rgba(212, 168, 67, .15);
+  border-color: rgba(212, 168, 67, .4);
+}
+
+/* ─── Price Trends Skeleton ─────────────────────────────────────────────── */
+.priceTrendsSkeleton {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: rgba(20, 18, 16, .6);
+  border: 1px solid rgba(212, 168, 67, .08);
+  border-radius: 14px;
+  text-align: center;
+}
+
+.priceTrendsSkeletonTitle {
+  font-family: 'DM Sans', sans-serif;
+  font-size: .85rem;
+  color: rgba(240, 235, 224, .4);
+  margin-bottom: 1rem;
+}
+
+.priceTrendsSkeletonBars {
+  display: flex;
+  gap: 6px;
+  align-items: flex-end;
+  justify-content: center;
+  height: 80px;
+}
+
+.priceTrendsSkeletonBar {
+  width: 24px;
+  background: rgba(255, 255, 255, .06);
+  border-radius: 3px;
+  animation: barPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes barPulse {
+  0%, 100% { opacity: .3; }
+  50% { opacity: .7; }
+}

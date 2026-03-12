@@ -104,7 +104,8 @@ async def scrape_getyourguide(
                             duration=duration,
                         )
                     )
-            except Exception:
+            except Exception as e:
+                logger.debug(f"GetYourGuide: skipped card parse error: {e}")
                 continue
 
         logger.info(
