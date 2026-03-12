@@ -1,6 +1,25 @@
 # TripMind — AI Travel Planner with Real-Time Verification
 
-An AI-powered travel planning app that generates personalized trip itineraries using Claude (Anthropic) and verifies every detail through 11 concurrent verification agents. Each agent can use either an official API (if you provide a key) or free web scraping — zero configuration required, optional APIs for higher reliability.
+## What is TripMind?
+
+TripMind is a full-stack AI travel planning application that creates personalized, multi-day trip itineraries and then independently verifies every detail in real time. It uses Anthropic's Claude LLM to generate the trip plan, then dispatches 11 concurrent verification agents to check hotel prices, flight costs, activity availability, weather forecasts, safety advisories, currency rates, place existence, reviews, and more.
+
+**The key idea:** Every verification agent has a dual-path design — it uses a paid official API (Amadeus, Booking.com, Viator, Google Places) when you provide a key, or falls back to free web scraping and public APIs. This means:
+
+- **Zero cost to run** (beyond ~$0.01–0.05 per trip in Claude API credits)
+- **No API keys required** — the app works fully out of the box
+- **Optional paid APIs** upgrade data quality from "estimated" to "verified with real prices"
+- **Graceful degradation** — if the Python verification service isn't running at all, the app still works with AI estimates
+
+### Tech Stack
+
+| Layer | Technology | Port |
+|-------|-----------|------|
+| Frontend | React 19, Vite, CSS Modules | 5173 |
+| Backend | Node.js, Express.js | 3001 |
+| Verification | Python 3.11+, FastAPI, Playwright, httpx, BeautifulSoup4 | 8000 |
+| AI | Anthropic Claude API (claude-sonnet-4-20250514) | — |
+| Cache | SQLite (async, TTL-based per agent) | — |
 
 ---
 
@@ -35,17 +54,32 @@ An AI-powered travel planning app that generates personalized trip itineraries u
                             SQLite Cache (TTL-based)
 ```
 
-**Key patterns:**
+### Step-by-Step Flow
+
+1. **User fills the 9-step form** — origin, destination(s), dates, travelers (adults + children ages), budget, trip vibe, dietary/accessibility/pet needs, passport country, activity level
+2. **Claude generates the plan** (two API calls via Server-Sent Events):
+   - *Skeleton call*: trip structure, destinations, daily overview, budget breakdown, hotel/restaurant/activity names, booking URLs
+   - *Day-by-day call*: detailed itinerary for each day, using the skeleton as context
+3. **Results appear immediately** in a 7-tab view (Map, Itinerary, Stays, Flights, Budget, Suggestions, Tips)
+4. **Verification starts in parallel** — 11 agents run concurrently via `asyncio.gather()`:
+   - Each agent: checks SQLite cache → tries official API (if key set) → tries scraper → falls back to search URLs
+   - Results stream back via Server-Sent Events (SSE) as each agent finishes
+   - Progress bar updates in real time (e.g., "7/11 agents complete")
+5. **Verified data populates the tabs** — hotel prices replace AI estimates, flight costs appear, weather/safety badges render, review ratings show up
+6. **User interacts with results** — swap hotels/restaurants, toggle currencies, select budget options (live price delta), export to PDF
+
+### Key Patterns
+
 - **Dual-path architecture:** Each agent checks for an API key at runtime. If set, uses the official API with scraper fallback on failure. If not set, uses free scraping directly.
 - **Data quality filtering:** Frontend filters out "Search Links" fallback entries (generic search URLs with no price) from verified hotels, flights, and activities — only shows real bookable results
 - **Price Trends fallback:** Charts always render — if backend returns no data, frontend generates estimated seasonal curves using the same monthly shape multipliers as the backend
 - **Interactive budget:** Selectable hotel/flight options in Budget tab with live price delta badges and total recalculation
 - **Specific booking links:** URL builders include hotel/activity name for property-specific search links instead of generic city searches
-- Split-prompt strategy: two Claude API calls (skeleton + days) to avoid token truncation
-- SSE streaming for both trip generation and verification progress
-- Fan-out/fan-in concurrency via `asyncio.gather()` for all 11 agents
-- Graceful degradation: app works fully without the Python service (shows AI estimates)
-- Code-split PDF export: `@react-pdf/renderer` (~1.5 MB) loaded lazily on demand
+- **Split-prompt strategy:** Two Claude API calls (skeleton + days) to avoid token truncation
+- **Server-Sent Events (SSE) streaming** for both trip generation and verification progress
+- **Fan-out/fan-in concurrency** via `asyncio.gather()` for all 11 agents
+- **Graceful degradation:** App works fully without the Python service (shows AI estimates)
+- **Code-split PDF export:** `@react-pdf/renderer` (~1.5 MB) loaded lazily on demand
 
 ---
 
@@ -149,7 +183,42 @@ npm run dev:full    # All 3 services (frontend + backend + agents)
 
 ---
 
-## Quick Start (Docker)
+## Running in Different Environments
+
+### Option A: Development (3 separate processes)
+
+This is the recommended way during development. All three services run independently with hot reload.
+
+```bash
+# Terminal 1: Frontend + Backend
+npm run dev
+
+# Terminal 2: Python agents (activate venv first)
+cd agents
+# Windows PowerShell: .venv\Scripts\activate
+# macOS/Linux: source .venv/bin/activate
+python main.py
+```
+
+Frontend at http://localhost:5173, backend at http://localhost:3001, agents at http://localhost:8000.
+
+### Option B: All-in-one development command
+
+```bash
+npm run dev:full    # Starts all 3 services in one terminal
+```
+
+> **Windows note:** If `dev:full` can't find Python, activate the venv first or use Option A.
+
+### Option C: Without verification agents
+
+```bash
+npm run dev         # Frontend + backend only
+```
+
+The app works fully — Claude generates the trip plan, but you won't see verified prices, weather, safety, or reviews. All data shows as AI estimates. This is useful for frontend development or when you don't need verification.
+
+### Option D: Docker
 
 ```bash
 git clone https://github.com/karansachdev-1012/multi_agentic_travel_planner.git
@@ -158,7 +227,29 @@ cp .env.example .env   # edit and add your ANTHROPIC_API_KEY
 docker compose up --build
 ```
 
-Open **http://localhost:3001** (frontend is pre-built and served by Express).
+Open **http://localhost:3001** (frontend is pre-built and served by Express). Two containers: `app` (:3001) and `agents` (:8000).
+
+### Option E: Production build (no Docker)
+
+```bash
+npm run build          # Build React to dist/
+npm start              # Serve on :3001 (Express serves dist/ + API)
+
+# In a separate terminal, start agents:
+cd agents && .venv/Scripts/python main.py   # Windows
+cd agents && .venv/bin/python main.py       # macOS/Linux
+```
+
+### Platform-Specific Notes
+
+| Platform | Note |
+|----------|------|
+| **Windows** | Use `http://127.0.0.1:8000` (not `localhost`) for `PYTHON_SERVICE_URL` in `.env`. Node.js on Windows has a DNS resolution issue with `localhost` that causes `ECONNREFUSED`. |
+| **Windows (Vite preview)** | Use `node node_modules/vite/bin/vite.js preview` instead of `npx vite preview` |
+| **Linux** | Run `playwright install-deps` after `playwright install chromium` to install system browser libraries (libatk, libnss3, etc.) |
+| **macOS (Apple Silicon)** | Playwright Chromium works natively on ARM64; no extra steps needed |
+| **Docker** | `PYTHON_SERVICE_URL` is automatically set to `http://agents:8000` via docker-compose networking |
+| **WSL2** | Works like Linux. Ensure the WSL2 distro has Python 3.11+ installed. |
 
 ---
 
@@ -238,7 +329,7 @@ tripmind/
 │   │   └── TripContext.jsx       Global state: form, generation, verification, swaps
 │   │
 │   ├── hooks/
-│   │   └── useVerification.js    SSE streaming verification hook
+│   │   └── useVerification.js    Server-Sent Events streaming verification hook
 │   │
 │   ├── components/
 │   │   ├── FormSteps.jsx         9-step trip wizard
@@ -321,8 +412,8 @@ tripmind/
 
 | Method | Endpoint | Rate Limit | Description |
 |--------|----------|------------|-------------|
-| `POST` | `/api/chat/stream` | 10/min | Claude SSE proxy |
-| `POST` | `/api/verify/stream` | 5/min | Verification SSE proxy |
+| `POST` | `/api/chat/stream` | 10/min | Claude Server-Sent Events (SSE) proxy |
+| `POST` | `/api/verify/stream` | 5/min | Verification Server-Sent Events (SSE) proxy |
 | `POST` | `/api/hotels/search` | 5/min | On-demand hotel search |
 | `GET` | `/api/health` | — | Health check |
 | `POST` | `/api/restaurants/alternatives` | 10/min | Claude-powered restaurant swap suggestions |
@@ -333,30 +424,27 @@ tripmind/
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| `POST` | `/verify/stream` | Run all agents (SSE per-agent updates) |
+| `POST` | `/verify/stream` | Run all agents (Server-Sent Events per-agent updates) |
 | `POST` | `/verify` | Run all agents (full JSON response) |
 | `POST` | `/hotels/search` | On-demand hotel search |
 | `GET` | `/health` | Service health + cache stats |
 
 ---
 
-## Deployment
+## Deployment (Cloud)
 
-### Docker
+Deploy the two Docker containers to any cloud platform:
+
+| Container | Port | Required Env Vars |
+|-----------|------|-------------------|
+| `app` | 3001 | `ANTHROPIC_API_KEY`, `PYTHON_SERVICE_URL` (internal URL to agents) |
+| `agents` | 8000 | (optional API keys) |
 
 ```bash
 docker compose up --build
 ```
 
-Two containers: `app` (:3001, Express + built React) and `agents` (:8000, FastAPI + Playwright).
-
-### Cloud Platforms
-
-Deploy both containers with:
-- **app** on port 3001 with `ANTHROPIC_API_KEY` and `PYTHON_SERVICE_URL` (agents internal URL)
-- **agents** on port 8000
-
-Works on Railway, Render, Fly.io, AWS ECS, Google Cloud Run, Azure Container Apps.
+Tested on: Railway, Render, Fly.io, AWS ECS, Google Cloud Run, Azure Container Apps.
 
 ---
 
