@@ -1,0 +1,61 @@
+/* ─── CHIP / UI PRIMITIVES ───────────────────────────────────────────────── */
+.chip {
+  padding: 8px 14px;
+  border-radius: 30px;
+  cursor: pointer;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  transition: all 0.18s;
+}
+
+.chipActive {
+  /* dynamic border/bg/color set via inline style for custom color prop */
+}
+
+.chipInactive {
+  border: 1.5px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  color: #999;
+}
+
+.group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* ─── INPUT FIELD ────────────────────────────────────────────────────────── */
+.inputWrap {
+  margin-bottom: 14px;
+}
+
+.label {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  margin-bottom: 8px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  font-weight: 600;
+  display: block;
+}
+
+.input {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  padding: 12px 14px;
+  color: var(--color-text);
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.textarea {
+  composes: input;
+  resize: vertical;
+}

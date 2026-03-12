@@ -1,0 +1,317 @@
+/* ─── VISA CHECKER ──────────────────────────────────────────────────────── */
+.emptyState {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px dashed rgba(255, 255, 255, 0.09);
+  border-radius: 12px;
+  padding: 13px 16px;
+  font-size: 13px;
+  color: #444;
+  margin-top: 12px;
+}
+
+.container {
+  margin-top: 14px;
+}
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.headerTitle {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #aaa;
+}
+
+.checkingText {
+  font-size: 11px;
+  color: #888;
+  animation: pulse 1s infinite;
+}
+
+.recheckBtn {
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 2px 9px;
+  font-size: 10px;
+  color: #666;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+/* ─── Loading ───────────────────────────────────────────────────────────── */
+.loadingBox {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.loadingIcon {
+  font-size: 22px;
+  animation: spin 1.5s linear infinite;
+  display: inline-block;
+}
+
+.loadingLabel {
+  font-size: 13px;
+  color: #666;
+}
+
+/* ─── Overall banner ────────────────────────────────────────────────────── */
+.overallBanner {
+  border-radius: 12px;
+  padding: 11px 15px;
+  margin-bottom: 10px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.overallEmoji {
+  font-size: 20px;
+}
+
+.overallTitle {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.overallAdvice {
+  font-size: 12px;
+  color: rgba(240, 235, 224, 0.55);
+  margin-top: 2px;
+}
+
+/* ─── Destination card ──────────────────────────────────────────────────── */
+.destCard {
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 14px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.destHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 15px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.destHeaderLeft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.destEmoji {
+  font-size: 18px;
+}
+
+.destName {
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.destStay {
+  font-size: 11px;
+  color: #888;
+}
+
+.statusBadge {
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.destBody {
+  padding: 12px 15px;
+}
+
+.passportValidity {
+  font-size: 12px;
+  color: #888;
+  margin-bottom: 8px;
+  display: flex;
+  gap: 6px;
+  align-items: flex-start;
+}
+
+.notes {
+  font-size: 12px;
+  color: #aaa;
+  line-height: 1.6;
+  margin-bottom: 10px;
+  display: flex;
+  gap: 6px;
+  align-items: flex-start;
+}
+
+/* ─── Visa free banner ──────────────────────────────────────────────────── */
+.visaFreeBox {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  padding: 8px 12px;
+  background: rgba(76, 175, 142, 0.07);
+  border: 1px solid rgba(76, 175, 142, 0.2);
+  border-radius: 8px;
+}
+
+.visaFreeText {
+  font-size: 13px;
+  color: #4caf8e;
+  font-weight: 500;
+}
+
+/* ─── Visa required ─────────────────────────────────────────────────────── */
+.visaQuestion {
+  font-size: 13px;
+  color: #ccc;
+  margin-bottom: 10px;
+  font-weight: 500;
+}
+
+.visaBtnRow {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.visaBtn {
+  padding: 9px 18px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.18s;
+}
+
+/* ─── Already has visa ──────────────────────────────────────────────────── */
+.hasVisaBox {
+  padding: 12px 14px;
+  background: rgba(76, 175, 142, 0.07);
+  border: 1px solid rgba(76, 175, 142, 0.2);
+  border-radius: 10px;
+}
+
+.hasVisaTitle {
+  font-weight: 600;
+  color: #4caf8e;
+  margin-bottom: 4px;
+  font-size: 13px;
+}
+
+.hasVisaDesc {
+  font-size: 12px;
+  color: #888;
+  line-height: 1.6;
+}
+
+/* ─── Needs visa ────────────────────────────────────────────────────────── */
+.visaPills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-bottom: 12px;
+}
+
+.visaPill {
+  border-radius: 20px;
+  padding: 3px 10px;
+  font-size: 11px;
+}
+
+.visaPillGold {
+  composes: visaPill;
+  background: rgba(212, 168, 67, 0.1);
+  border: 1px solid rgba(212, 168, 67, 0.2);
+  color: var(--color-gold);
+}
+
+.visaPillNeutral {
+  composes: visaPill;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #aaa;
+}
+
+.docsTitle {
+  font-size: 10px;
+  color: #666;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+.docsList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-bottom: 12px;
+}
+
+.docItem {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  padding: 3px 9px;
+  font-size: 11px;
+  color: #ccc;
+}
+
+.tipBox {
+  font-size: 12px;
+  color: #888;
+  font-style: italic;
+  line-height: 1.6;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+
+.visaActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.applyBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  border-radius: 10px;
+  padding: 9px 16px;
+  color: #080706;
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  background: linear-gradient(135deg, #d4a843, #f0cc6e);
+}
+
+/* ─── No selection ──────────────────────────────────────────────────────── */
+.noSelection {
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px dashed rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  font-size: 12px;
+  color: #666;
+}

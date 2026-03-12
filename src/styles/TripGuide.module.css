@@ -1,0 +1,1467 @@
+/* ─── TRIP GUIDE ─────────────────────────────────────────────────────────── */
+.page {
+  min-height: 100vh;
+  background: var(--color-bg-dark);
+  font-family: var(--font-body);
+  color: var(--color-text);
+}
+
+/* ─── Hero ───────────────────────────────────────────────────────────────── */
+.hero {
+  position: relative;
+  height: 100vh;
+  min-height: 500px;
+  display: flex;
+  align-items: flex-end;
+  overflow: hidden;
+}
+
+.heroImg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(0.48);
+}
+
+.heroContent {
+  position: relative;
+  max-width: 820px;
+  padding: 0 36px 64px;
+  z-index: 2;
+}
+
+.heroBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(212, 168, 67, 0.12);
+  border: 1px solid rgba(212, 168, 67, 0.3);
+  border-radius: 30px;
+  padding: 5px 16px;
+  margin-bottom: 14px;
+  font-size: 11px;
+  color: var(--color-gold);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.heroTitle {
+  font-family: var(--font-heading);
+  font-size: clamp(42px, 8vw, 88px);
+  font-weight: 700;
+  line-height: 0.9;
+  letter-spacing: -2px;
+  margin: 0 0 16px;
+}
+
+.heroTagline {
+  font-size: 15px;
+  color: rgba(240, 235, 224, 0.7);
+  max-width: 520px;
+  margin-bottom: 24px;
+  line-height: 1.6;
+}
+
+.heroStats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.heroStat {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(8px);
+  border-radius: 30px;
+  padding: 7px 14px;
+  font-size: 12px;
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+
+.heroCtas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.heroMapBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #4285F4, #34A853);
+  border: none;
+  border-radius: 30px;
+  padding: 10px 20px;
+  color: white;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(66, 133, 244, 0.4);
+}
+
+.heroSugBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(212, 168, 67, 0.15);
+  border: 1.5px solid rgba(212, 168, 67, 0.4);
+  border-radius: 30px;
+  padding: 10px 20px;
+  color: var(--color-gold);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.newTripBtn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 30px;
+  padding: 7px 16px;
+  color: var(--color-text);
+  font-size: 12px;
+  cursor: pointer;
+  font-family: inherit;
+  z-index: 10;
+}
+
+/* ─── Summary ───────────────────────────────────────────────────────────── */
+.summaryBar {
+  background: rgba(212, 168, 67, 0.04);
+  border-bottom: 1px solid rgba(212, 168, 67, 0.1);
+  padding: 22px 36px;
+}
+
+.summaryText {
+  max-width: 900px;
+  margin: 0 auto;
+  font-family: var(--font-heading);
+  font-size: 17px;
+  line-height: 1.8;
+  color: rgba(240, 235, 224, 0.75);
+  font-style: italic;
+}
+
+/* ─── Nav ────────────────────────────────────────────────────────────────── */
+.nav {
+  position: sticky;
+  top: 0;
+  background: rgba(8, 7, 6, 0.97);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  z-index: 50;
+  padding: 0 20px;
+}
+
+.navInner {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  gap: 2px;
+  overflow-x: auto;
+}
+
+.navBtn {
+  padding: 13px 16px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+
+.navBtnActive {
+  composes: navBtn;
+  color: var(--color-gold);
+  border-bottom: 2px solid var(--color-gold);
+}
+
+.navBtnInactive {
+  composes: navBtn;
+  color: #555;
+  border-bottom: 2px solid transparent;
+}
+
+/* ─── Content ───────────────────────────────────────────────────────────── */
+.content {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 44px 22px;
+}
+
+/* ─── Section header ────────────────────────────────────────────────────── */
+.sectionTitle {
+  font-family: var(--font-heading);
+  font-size: 34px;
+  font-weight: 700;
+  margin-bottom: 5px;
+}
+
+.sectionSub {
+  color: #777;
+  font-size: 13px;
+  margin-bottom: 24px;
+}
+
+/* ─── Day / stay tabs ───────────────────────────────────────────────────── */
+.tabRow {
+  margin-bottom: 24px;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.tabBtn {
+  padding: 7px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.tabBtnActive {
+  composes: tabBtn;
+  border: 1.5px solid var(--color-gold);
+  background: rgba(212, 168, 67, 0.12);
+  color: var(--color-gold);
+}
+
+.tabBtnInactive {
+  composes: tabBtn;
+  border: 1.5px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.03);
+  color: #777;
+}
+
+/* ─── Day layout ────────────────────────────────────────────────────────── */
+.dayGrid {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 18px;
+  align-items: start;
+}
+
+.dayCard {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  overflow: hidden;
+  margin-bottom: 14px;
+}
+
+.dayHero {
+  position: relative;
+  height: 240px;
+}
+
+.dayHeroImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.dayHeroOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(8, 7, 6, 1) 0%, rgba(8, 7, 6, 0.2) 50%, transparent 100%);
+}
+
+.dayHeroInfo {
+  position: absolute;
+  bottom: 18px;
+  left: 22px;
+}
+
+.dayNum {
+  font-family: var(--font-heading);
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.dayDate {
+  font-size: 12px;
+  color: var(--color-gold);
+  letter-spacing: 1px;
+  margin-top: 3px;
+}
+
+.dayBadges {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.dayTheme {
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(6px);
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 11px;
+}
+
+.dayWeatherBadge {
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(6px);
+  border-radius: 20px;
+  padding: 4px 10px;
+  font-size: 11px;
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+/* ─── Activities ────────────────────────────────────────────────────────── */
+.activities {
+  padding: 18px 22px;
+}
+
+.activity {
+  display: flex;
+  gap: 12px;
+  padding: 12px 0;
+}
+
+.activityBorder {
+  composes: activity;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.actTime {
+  min-width: 76px;
+  font-size: 10px;
+  color: var(--color-gold);
+  font-weight: 600;
+  padding-top: 2px;
+  letter-spacing: 0.5px;
+}
+
+.actBody {
+  flex: 1;
+}
+
+.actName {
+  font-weight: 500;
+  font-size: 14px;
+  margin-bottom: 3px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.actCost {
+  font-size: 11px;
+  color: #888;
+  margin-left: 4px;
+}
+
+.actDesc {
+  font-size: 12px;
+  color: #999;
+  line-height: 1.65;
+  margin-bottom: 7px;
+}
+
+.actLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+/* ─── Tag badge ─────────────────────────────────────────────────────────── */
+.actTag {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 600;
+  margin-left: 6px;
+}
+
+/* ─── Dining tip ────────────────────────────────────────────────────────── */
+.diningTip {
+  background: rgba(210, 90, 60, 0.06);
+  border: 1px solid rgba(210, 90, 60, 0.15);
+  border-radius: 13px;
+  padding: 14px 18px;
+  display: flex;
+  gap: 12px;
+}
+
+.diningEmoji {
+  font-size: 24px;
+}
+
+.diningContent {
+  flex: 1;
+}
+
+.diningName {
+  font-weight: 600;
+  font-size: 14px;
+  color: #e88870;
+}
+
+.diningDesc {
+  font-size: 12px;
+  color: #999;
+  line-height: 1.6;
+  margin-bottom: 7px;
+}
+
+.diningLinks {
+  display: flex;
+  gap: 5px;
+}
+
+.diningHeader {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 2px;
+}
+
+/* ─── Sidebar ───────────────────────────────────────────────────────────── */
+.sidebar {
+  position: sticky;
+  top: 72px;
+}
+
+.weatherCard {
+  background: rgba(30, 160, 210, 0.06);
+  border: 1px solid rgba(30, 160, 210, 0.15);
+  border-radius: 14px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+}
+
+.weatherLabel {
+  font-size: 10px;
+  color: #60c8e8;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+.weatherRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.weatherIcon {
+  font-size: 32px;
+}
+
+.weatherTemp {
+  font-size: 18px;
+  font-weight: 700;
+  color: #60c8e8;
+}
+
+.weatherDesc {
+  font-size: 11px;
+  color: #888;
+}
+
+.weatherRain {
+  font-size: 11px;
+  color: #60c8e8;
+  margin-top: 2px;
+}
+
+.stayCard {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.stayHeader {
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.stayLabel {
+  font-size: 10px;
+  color: #555;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+
+.stayLocation {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.stayLinks {
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.googleHotelLink {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 10px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #ccc;
+  font-size: 12px;
+  text-decoration: none;
+}
+
+.dayNavBtns {
+  display: flex;
+  gap: 7px;
+}
+
+.dayNavBtn {
+  flex: 1;
+  padding: 9px;
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #777;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 12px;
+}
+
+/* ─── Route map ─────────────────────────────────────────────────────────── */
+.mapFrame {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.mapBtns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.routeStops {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.routeStopsLabel {
+  font-size: 11px;
+  color: #888;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.routeStop {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.routeStopNum {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.routeStopName {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.routeStopType {
+  font-size: 11px;
+  color: #666;
+}
+
+/* ─── Stays tab ─────────────────────────────────────────────────────────── */
+.staySearchBox {
+  background: rgba(255, 56, 92, 0.05);
+  border: 1px solid rgba(255, 56, 92, 0.2);
+  border-radius: 13px;
+  padding: 14px 18px;
+  margin-bottom: 20px;
+}
+
+.staySearchLabel {
+  font-size: 10px;
+  color: #888;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 9px;
+  font-weight: 600;
+}
+
+.staySearchBtns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.verifiedHotels {
+  margin-bottom: 20px;
+}
+
+.verifiedHotelsHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.verifiedHotelsCount {
+  font-size: 11px;
+  color: #888;
+}
+
+.hotelGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.hotelCard {
+  background: rgba(76, 175, 142, 0.04);
+  border: 1px solid rgba(76, 175, 142, 0.2);
+  border-radius: 12px;
+  padding: 12px;
+}
+
+.hotelName {
+  font-weight: 600;
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+.hotelPriceRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.hotelPrice {
+  font-family: var(--font-heading);
+  font-size: 20px;
+  font-weight: 700;
+  color: #4caf8e;
+}
+
+.hotelPriceUnit {
+  font-size: 10px;
+  color: #555;
+}
+
+.hotelRating {
+  font-size: 11px;
+  color: var(--color-gold);
+}
+
+.hotelMeta {
+  display: flex;
+  gap: 4px;
+}
+
+.hotelSource {
+  font-size: 9px;
+  color: #888;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  padding: 2px 6px;
+}
+
+.hotelBookLink {
+  font-size: 9px;
+  color: #4caf8e;
+  text-decoration: underline;
+}
+
+/* ─── AI options label ──────────────────────────────────────────────────── */
+.aiLabel {
+  font-size: 10px;
+  color: #666;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+
+/* ─── Accommodation cards ───────────────────────────────────────────────── */
+.optGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 14px;
+}
+
+.optCard {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 16px;
+  overflow: hidden;
+  transition: transform 0.3s;
+}
+
+.optCardPrimary {
+  composes: optCard;
+  border: 1.5px solid rgba(212, 168, 67, 0.45);
+}
+
+.optCardSecondary {
+  composes: optCard;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.optHero {
+  position: relative;
+  height: 160px;
+}
+
+.optHeroImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.optLabel {
+  position: absolute;
+  top: 9px;
+  left: 9px;
+  border-radius: 20px;
+  padding: 3px 10px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.optLabelPrimary {
+  composes: optLabel;
+  background: var(--color-gold);
+  color: #000;
+}
+
+.optLabelSecondary {
+  composes: optLabel;
+  background: rgba(0, 0, 0, 0.65);
+  color: #fff;
+}
+
+.optBody {
+  padding: 14px;
+}
+
+.optName {
+  font-weight: 600;
+  font-size: 15px;
+  margin-bottom: 2px;
+}
+
+.optType {
+  font-size: 11px;
+  color: var(--color-gold);
+  margin-bottom: 7px;
+}
+
+.optDesc {
+  font-size: 12px;
+  color: #999;
+  line-height: 1.6;
+  margin-bottom: 9px;
+}
+
+.optAmenities {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+
+.optAmenity {
+  font-size: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  padding: 2px 7px;
+  color: #aaa;
+}
+
+.optFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  padding-top: 9px;
+}
+
+.optPrice {
+  font-family: var(--font-heading);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-gold);
+}
+
+.optPriceUnit {
+  font-size: 10px;
+  color: #555;
+}
+
+.optBookBtns {
+  display: flex;
+  gap: 4px;
+}
+
+.optBookAirbnb {
+  background: rgba(255, 56, 92, 0.8);
+  border: none;
+  border-radius: 7px;
+  padding: 6px 10px;
+  color: white;
+  font-size: 10px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.optBookBooking {
+  background: rgba(0, 83, 166, 0.8);
+  border: none;
+  border-radius: 7px;
+  padding: 6px 10px;
+  color: white;
+  font-size: 10px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+/* ─── Flights ───────────────────────────────────────────────────────────── */
+.flightSearchBtns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 28px;
+}
+
+.verifiedFlights {
+  margin-bottom: 24px;
+}
+
+.verifiedFlightsHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.vfGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 10px;
+}
+
+.vfCard {
+  background: rgba(76, 175, 142, 0.04);
+  border: 1px solid rgba(76, 175, 142, 0.2);
+  border-radius: 13px;
+  padding: 14px;
+}
+
+.vfAirline {
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.vfPrice {
+  font-family: var(--font-heading);
+  font-size: 22px;
+  font-weight: 700;
+  color: #4caf8e;
+  margin-bottom: 4px;
+}
+
+.vfMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.vfMetaItem {
+  font-size: 11px;
+  color: #888;
+}
+
+.vfBookBtn {
+  display: block;
+  background: rgba(76, 175, 142, 0.8);
+  border-radius: 8px;
+  padding: 7px;
+  color: white;
+  text-decoration: none;
+  font-size: 11px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.flightCard {
+  border-radius: 15px;
+  padding: 20px;
+}
+
+.flightCardPrimary {
+  composes: flightCard;
+  background: rgba(212, 168, 67, 0.06);
+  border: 1.5px solid rgba(212, 168, 67, 0.35);
+}
+
+.flightCardSecondary {
+  composes: flightCard;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.flightLabel {
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--color-gold);
+  margin-bottom: 7px;
+  font-weight: 700;
+}
+
+.flightAirline {
+  font-family: var(--font-heading);
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.flightRoute {
+  font-size: 11px;
+  color: #777;
+  margin-bottom: 12px;
+  letter-spacing: 1px;
+}
+
+.flightRow {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: 12px;
+}
+
+.flightRowKey {
+  color: #888;
+}
+
+.flightRowVal {
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+.flightRowPrice {
+  font-weight: 500;
+  color: var(--color-gold);
+}
+
+.flightTip {
+  margin-top: 9px;
+  font-size: 11px;
+  color: #777;
+  line-height: 1.6;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  padding-top: 9px;
+}
+
+.flightSearchBtn {
+  display: block;
+  margin-top: 12px;
+  background: rgba(26, 115, 232, 0.8);
+  border-radius: 8px;
+  padding: 9px;
+  color: white;
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.bookingOrder {
+  margin-top: 28px;
+  background: rgba(212, 168, 67, 0.05);
+  border: 1px solid rgba(212, 168, 67, 0.15);
+  border-radius: 13px;
+  padding: 18px 22px;
+}
+
+.bookingOrderTitle {
+  font-family: var(--font-heading);
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 10px;
+  color: var(--color-gold);
+}
+
+.bookingOrderList {
+  padding-left: 18px;
+  margin: 0;
+}
+
+.bookingOrderItem {
+  font-size: 13px;
+  color: #ccc;
+  line-height: 1.9;
+}
+
+/* ─── Budget ────────────────────────────────────────────────────────────── */
+.budgetHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.liveRates {
+  background: rgba(76, 175, 142, 0.06);
+  border: 1px solid rgba(76, 175, 142, 0.15);
+  border-radius: 12px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.rateItem {
+  font-size: 12px;
+  color: #ccc;
+}
+
+.rateVal {
+  color: #4caf8e;
+  font-weight: 600;
+}
+
+.budgetSummary {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+
+.budgetBox {
+  background: rgba(212, 168, 67, 0.06);
+  border: 1px solid rgba(212, 168, 67, 0.2);
+  border-radius: 13px;
+  padding: 14px 22px;
+  flex: 1;
+  min-width: 120px;
+}
+
+.budgetBoxLabel {
+  font-size: 10px;
+  color: #888;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.budgetBoxVal {
+  font-family: var(--font-heading);
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--color-gold);
+}
+
+.budgetTable {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.budgetTh {
+  padding: 11px 16px;
+  text-align: left;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #888;
+  font-weight: 600;
+}
+
+.budgetTd {
+  padding: 11px 16px;
+  font-size: 13px;
+}
+
+.budgetTdCat {
+  composes: budgetTd;
+  font-weight: 500;
+}
+
+.budgetTdTotal {
+  composes: budgetTd;
+  color: var(--color-gold);
+  font-weight: 600;
+}
+
+.budgetTdPp {
+  composes: budgetTd;
+  font-size: 12px;
+  color: #aaa;
+}
+
+.budgetTdTip {
+  composes: budgetTd;
+  font-size: 11px;
+  color: #666;
+}
+
+/* ─── Suggestions ───────────────────────────────────────────────────────── */
+.sugInfo {
+  background: rgba(212, 168, 67, 0.06);
+  border: 1px solid rgba(212, 168, 67, 0.2);
+  border-radius: 12px;
+  padding: 12px 16px;
+  margin-bottom: 24px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.sugInfoIcon {
+  font-size: 18px;
+}
+
+.sugInfoText {
+  font-size: 12px;
+  color: var(--color-gold);
+}
+
+.sugEmpty {
+  text-align: center;
+  padding: 40px 20px;
+  color: #555;
+  font-size: 14px;
+}
+
+.sugGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 14px;
+}
+
+.sugCard {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1.5px solid rgba(212, 168, 67, 0.2);
+  border-radius: 16px;
+  overflow: hidden;
+  transition: transform 0.3s;
+}
+
+.sugHero {
+  position: relative;
+  height: 180px;
+}
+
+.sugHeroImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(0.6);
+}
+
+.sugHeroOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(8, 7, 6, 0.95) 0%, transparent 60%);
+}
+
+.sugCat {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: rgba(212, 168, 67, 0.9);
+  border-radius: 20px;
+  padding: 3px 12px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #080706;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.sugCost {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(6px);
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-gold);
+}
+
+.sugHeroInfo {
+  position: absolute;
+  bottom: 14px;
+  left: 14px;
+  right: 14px;
+}
+
+.sugName {
+  font-family: var(--font-heading);
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.sugLocation {
+  font-size: 11px;
+  color: var(--color-gold);
+  margin-top: 3px;
+}
+
+.sugBody {
+  padding: 16px;
+}
+
+.sugDesc {
+  font-size: 13px;
+  color: #ccc;
+  line-height: 1.6;
+  margin-bottom: 8px;
+}
+
+.sugWhy {
+  font-size: 12px;
+  color: var(--color-gold);
+  font-style: italic;
+  line-height: 1.5;
+  margin-bottom: 12px;
+  padding: 8px 12px;
+  background: rgba(212, 168, 67, 0.06);
+  border-radius: 8px;
+  border-left: 3px solid var(--color-gold);
+}
+
+.sugLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* ─── Tips ──────────────────────────────────────────────────────────────── */
+.tipsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 11px;
+  margin-bottom: 24px;
+}
+
+.tipCard {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 13px;
+  padding: 16px;
+}
+
+.tipText {
+  font-size: 13px;
+  color: #ccc;
+  line-height: 1.7;
+}
+
+.packingBox {
+  background: rgba(30, 160, 210, 0.05);
+  border: 1px solid rgba(30, 160, 210, 0.15);
+  border-radius: 13px;
+  padding: 16px 18px;
+  margin-bottom: 20px;
+}
+
+.packingTitle {
+  font-family: var(--font-heading);
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 9px;
+}
+
+.packingItems {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.packingItem {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 12px;
+  color: #ccc;
+}
+
+.socialGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.socialBox {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 13px;
+  padding: 16px;
+}
+
+.socialTitle {
+  font-family: var(--font-heading);
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.igLink {
+  display: flex;
+  gap: 7px;
+  align-items: flex-start;
+  margin-bottom: 8px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.igAt {
+  color: #E1306C;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.igHandle {
+  font-size: 12px;
+  font-weight: 500;
+  color: #E1306C;
+}
+
+.igDesc {
+  font-size: 11px;
+  color: #777;
+}
+
+.ytLink {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  margin-bottom: 7px;
+  text-decoration: none;
+  color: #ccc;
+  font-size: 12px;
+  padding: 6px 10px;
+  background: rgba(255, 0, 0, 0.06);
+  border: 1px solid rgba(255, 0, 0, 0.12);
+  border-radius: 7px;
+}
+
+.ytIcon {
+  color: #FF0000;
+  flex-shrink: 0;
+}
+
+/* ─── Footer ────────────────────────────────────────────────────────────── */
+.footer {
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 20px 32px;
+  text-align: center;
+  color: #555;
+  font-size: 11px;
+}
+
+/* ─── Shared button styles ──────────────────────────────────────────────── */
+.bigBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  border-radius: 10px;
+  padding: 11px 18px;
+  color: white;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.linkBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+/* Location heading */
+.locationTitle {
+  font-family: var(--font-heading);
+  font-size: 30px;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.locationDates {
+  font-size: 12px;
+  color: #888;
+}
+
+.locationWrap {
+  margin-bottom: 18px;
+}

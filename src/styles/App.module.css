@@ -1,0 +1,159 @@
+/* ─── APP SHELL ──────────────────────────────────────────────────────────── */
+.appShell {
+  min-height: 100vh;
+  background: var(--color-bg-dark);
+  font-family: var(--font-body);
+  color: var(--color-text);
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  padding: 26px 22px 0;
+  max-width: 640px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.headerTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+}
+
+.logo {
+  font-family: var(--font-heading);
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--color-gold);
+  letter-spacing: -0.5px;
+}
+
+.logoSub {
+  font-size: 9px;
+  color: #2d2820;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+}
+
+.stepCount {
+  font-size: 10px;
+  color: #3a3530;
+}
+
+/* Progress bar */
+.progressBar {
+  display: flex;
+  gap: 3px;
+  margin-bottom: 10px;
+}
+
+.progressSegment {
+  flex: 1;
+  height: 3px;
+  border-radius: 2px;
+  transition: background 0.3s;
+}
+
+.progressSegmentActive {
+  background: var(--color-gold);
+}
+
+.progressSegmentInactive {
+  background: rgba(255, 255, 255, 0.07);
+}
+
+/* Step labels */
+.stepLabels {
+  display: flex;
+  gap: 2px;
+  margin-bottom: 26px;
+}
+
+.stepLabel {
+  font-size: 9px;
+  flex: 1;
+  text-align: center;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.stepLabelCurrent {
+  color: var(--color-gold);
+  font-weight: 700;
+}
+
+.stepLabelDone {
+  color: #553f1a;
+  cursor: pointer;
+}
+
+.stepLabelFuture {
+  color: #222;
+}
+
+/* Content area */
+.content {
+  flex: 1;
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 0 22px 48px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.formCard {
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid var(--border-subtle);
+  border-radius: 18px;
+  padding: 26px 20px;
+}
+
+/* Navigation */
+.formNav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 24px;
+  padding-top: 17px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.backBtn {
+  padding: 10px 20px;
+  border-radius: 10px;
+  border: 1px solid var(--border-light);
+  background: none;
+  color: #777;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+}
+
+.backBtn:disabled {
+  color: #1e1e1e;
+  cursor: not-allowed;
+}
+
+.nextBtn {
+  padding: 10px 24px;
+  border-radius: 10px;
+  border: none;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.nextBtnActive {
+  background: linear-gradient(135deg, #d4a843, #f0cc6e);
+  color: var(--color-bg-dark);
+  cursor: pointer;
+}
+
+.nextBtnDisabled {
+  background: rgba(255, 255, 255, 0.06);
+  color: #2a2a2a;
+  cursor: not-allowed;
+}

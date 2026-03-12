@@ -1,0 +1,129 @@
+/* Seasonal Panel — seasonal intelligence card for sidebar */
+
+.card {
+  background: rgba(20, 18, 16, .6);
+  border: 1px solid rgba(212, 168, 67, .12);
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.label {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: rgba(255, 255, 255, .4);
+  margin-bottom: 10px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.seasonEmoji {
+  font-size: 22px;
+  line-height: 1;
+}
+
+.headerInfo {
+  flex: 1;
+}
+
+.seasonName {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, .85);
+  text-transform: capitalize;
+}
+
+.monthTourism {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  color: rgba(255, 255, 255, .4);
+  margin-top: 1px;
+}
+
+.tourismBadge {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 10px;
+  text-transform: capitalize;
+  white-space: nowrap;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.stat {
+  background: rgba(255, 255, 255, .03);
+  border-radius: 8px;
+  padding: 8px;
+  text-align: center;
+}
+
+.statVal {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, .85);
+}
+
+.statUnit {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 10px;
+  color: rgba(255, 255, 255, .35);
+  margin-top: 2px;
+}
+
+.insights {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.insight {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px;
+  background: rgba(255, 255, 255, .02);
+  border-radius: 8px;
+}
+
+.insightEmoji {
+  font-size: 16px;
+  line-height: 1.3;
+  flex-shrink: 0;
+}
+
+.insightBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.insightTitle {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, .75);
+}
+
+.insightDetail {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  color: rgba(255, 255, 255, .45);
+  line-height: 1.4;
+  margin-top: 2px;
+}

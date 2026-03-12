@@ -1,0 +1,37 @@
+/* ─── DESIGN TOKENS ──────────────────────────────────────────────────────── */
+:root {
+  /* Brand */
+  --color-gold: #d4a843;
+  --color-gold-light: #f0cc6e;
+  --color-bg-dark: #080706;
+  --color-text: #f0ebe0;
+  --color-text-muted: #888;
+  --color-text-dim: #555;
+  --color-text-faint: #444;
+  --color-text-ghost: #222;
+
+  /* Accents */
+  --color-success: #4caf8e;
+  --color-error: #e87070;
+  --color-info: #60c8e8;
+  --color-warning: #e8a060;
+  --color-food: #e88870;
+  --color-purple: #c992e8;
+
+  /* Surfaces */
+  --surface-card: rgba(255, 255, 255, 0.03);
+  --surface-card-hover: rgba(255, 255, 255, 0.05);
+  --border-subtle: rgba(255, 255, 255, 0.07);
+  --border-light: rgba(255, 255, 255, 0.1);
+  --border-medium: rgba(255, 255, 255, 0.12);
+
+  /* Typography */
+  --font-heading: 'Cormorant Garamond', serif;
+  --font-body: 'DM Sans', 'Segoe UI', sans-serif;
+
+  /* Spacing */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-pill: 30px;
+}

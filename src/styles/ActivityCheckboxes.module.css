@@ -1,0 +1,205 @@
+/* ─── ACTIVITY CHECKBOXES ────────────────────────────────────────────────── */
+.emptyState {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px dashed rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 14px 16px;
+  font-size: 13px;
+  color: #444;
+  margin-top: 4px;
+}
+
+.container {
+  margin-top: 4px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.headerTitle {
+  font-size: 11px;
+  color: var(--color-gold);
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.selectedCount {
+  font-size: 11px;
+  color: #888;
+}
+
+.loadingText {
+  font-size: 11px;
+  color: #888;
+  animation: pulse 1s infinite;
+}
+
+.refreshBtn {
+  background: none;
+  border: 1px solid rgba(212, 168, 67, 0.2);
+  border-radius: 20px;
+  padding: 3px 10px;
+  font-size: 10px;
+  color: #888;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+/* ─── Skeleton ──────────────────────────────────────────────────────────── */
+.skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.skeletonBar {
+  height: 54px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  animation: pulse 1.5s infinite;
+}
+
+/* ─── Category ──────────────────────────────────────────────────────────── */
+.category {
+  margin-bottom: 16px;
+}
+
+.categoryTitle {
+  font-size: 10px;
+  color: #666;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 7px;
+  font-weight: 600;
+}
+
+.categoryList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* ─── Activity item ─────────────────────────────────────────────────────── */
+.actLabel {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 11px 14px;
+  border-radius: 11px;
+  cursor: pointer;
+  transition: all 0.18s;
+}
+
+.actLabelActive {
+  composes: actLabel;
+  background: rgba(212, 168, 67, 0.07);
+  border: 1.5px solid rgba(212, 168, 67, 0.45);
+}
+
+.actLabelInactive {
+  composes: actLabel;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.checkWrap {
+  position: relative;
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+}
+
+.checkInput {
+  position: absolute;
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+  margin: 0;
+}
+
+.checkBox {
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.checkBoxOn {
+  composes: checkBox;
+  background: var(--color-gold);
+  border: none;
+}
+
+.checkBoxOff {
+  composes: checkBox;
+  border: 1.5px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.actContent {
+  flex: 1;
+}
+
+.actHeader {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 2px;
+}
+
+.actIcon {
+  font-size: 16px;
+}
+
+.actName {
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.actNameActive {
+  composes: actName;
+  color: var(--color-gold);
+}
+
+.actNameInactive {
+  composes: actName;
+  color: var(--color-text);
+}
+
+.actDesc {
+  font-size: 12px;
+  color: #888;
+  line-height: 1.5;
+}
+
+/* ─── Fallback ──────────────────────────────────────────────────────────── */
+.fallback {
+  padding: 16px;
+  font-size: 13px;
+  color: #555;
+  text-align: center;
+}
+
+.retryBtn {
+  background: none;
+  border: none;
+  color: var(--color-gold);
+  cursor: pointer;
+  font-family: inherit;
+  text-decoration: underline;
+}

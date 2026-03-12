@@ -1,0 +1,85 @@
+/* RatingBadge — compact rating display for activity/dining cards */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  padding: 2px 7px;
+  border-radius: 6px;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.star {
+  font-size: 11px;
+  line-height: 1;
+}
+
+.rating {
+  font-weight: 600;
+}
+
+.count {
+  color: rgba(255, 255, 255, .35);
+  font-size: 10px;
+}
+
+.tooltip {
+  position: relative;
+  cursor: help;
+}
+
+.tooltipContent {
+  display: none;
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(20, 18, 16, .95);
+  border: 1px solid rgba(212, 168, 67, .2);
+  border-radius: 10px;
+  padding: 10px 12px;
+  min-width: 200px;
+  max-width: 280px;
+  z-index: 100;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, .4);
+}
+
+.tooltip:hover .tooltipContent {
+  display: block;
+}
+
+.tooltipHeader {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, .8);
+  margin-bottom: 4px;
+}
+
+.tooltipCategory {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 10px;
+  color: rgba(255, 255, 255, .35);
+  margin-bottom: 8px;
+}
+
+.snippet {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  color: rgba(255, 255, 255, .5);
+  line-height: 1.4;
+  padding: 6px 0;
+  border-top: 1px solid rgba(255, 255, 255, .06);
+  font-style: italic;
+}
+
+.tooltipSource {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 9px;
+  color: rgba(255, 255, 255, .25);
+  margin-top: 6px;
+  text-align: right;
+}

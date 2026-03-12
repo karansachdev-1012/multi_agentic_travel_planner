@@ -1,0 +1,63 @@
+/* ─── VERIFICATION BADGE ─────────────────────────────────────────────────── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  border-radius: 20px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.badgeNormal {
+  padding: 3px 10px;
+  font-size: 10px;
+}
+
+.badgeSmall {
+  padding: 1px 7px;
+  font-size: 9px;
+}
+
+.verified {
+  background: rgba(76, 175, 142, 0.12);
+  border: 1px solid rgba(76, 175, 142, 0.35);
+  color: var(--color-success);
+}
+
+.ai {
+  background: rgba(212, 168, 67, 0.1);
+  border: 1px solid rgba(212, 168, 67, 0.3);
+  color: var(--color-gold);
+}
+
+.failed {
+  background: rgba(232, 112, 112, 0.1);
+  border: 1px solid rgba(232, 112, 112, 0.3);
+  color: var(--color-error);
+}
+
+/* ─── WEATHER WIDGET ─────────────────────────────────────────────────────── */
+.weatherWidget {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  background: rgba(30, 160, 210, 0.06);
+  border: 1px solid rgba(30, 160, 210, 0.15);
+  border-radius: 8px;
+  font-size: 11px;
+}
+
+.weatherIcon {
+  font-size: 18px;
+}
+
+.weatherTemp {
+  font-weight: 600;
+  color: var(--color-info);
+}
+
+.weatherDesc {
+  color: #666;
+  font-size: 10px;
+}
